@@ -6,3 +6,9 @@ spec:
   cdn:
     enabled: false
   timeoutSec: 60
+  sessionAffinity:
+    affinityType: "CLIENT_IP"
+  customRequestHeaders:
+    headers:
+      - "X-Client-Region:{client_region}"
+      - "X-Forwarded-For:{client_ip}"

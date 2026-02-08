@@ -4,6 +4,5 @@ metadata:
   name: frontend-cert
 spec:
   domains:
-    - 34.54.116.200.nip.io
-
-
+    - answerflow-ai.com
+    - www.answerflow-ai.com

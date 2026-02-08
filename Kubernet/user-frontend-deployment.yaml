@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: user-frontend
-          image: gcr.io/interview-ai-482614/user-frontend:REPLACED_BY_CICD
+          image: gcr.io/gen-lang-client-0149291660/user-frontend:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 80

@@ -84,7 +84,8 @@ const WebSocketInterview = () => {
       }
 
       // Access Socket.IO from global scope (loaded from CDN)
-      socketRef.current = io("http://localhost:3000", {
+      socketRef.current = io({
+        path: "/socket.io",
         reconnection: true,
         reconnectionDelay: 1000,
         reconnectionDelayMax: 5000,
@@ -272,7 +273,8 @@ const WebSocketInterview = () => {
   const handleUploadFile = async () => {
     try {
       if (!socketRef.current) {
-        socketRef.current = io("http://localhost:3000", {
+        socketRef.current = io({
+          path: "/socket.io",
           reconnection: true,
           reconnectionDelay: 1000,
           reconnectionDelayMax: 5000,

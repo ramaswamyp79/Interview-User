@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 
 const CompletedTag = () => (
@@ -10,6 +10,7 @@ const CompletedTag = () => (
 
 const Home = () => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const [completedSteps, setCompletedSteps] = useState([]);
   const [ctaStep, setCtaStep] = useState(null);
@@ -35,7 +36,7 @@ useEffect(() => {
 
   // Button Handlers
   const handleUploadResume = () => console.log("Upload Resume");
-  const handleTrial = () => console.log("Start Trial");
+  const handleTrial = () => navigate("/websocket-interview");
   const handleBuyCredits = () => console.log("Buy Credits");
   const handleStartInterview = () => console.log("Start Interview");
 

@@ -8,4 +8,7 @@ spec:
   ports:
     - port: 80
       targetPort: 80
+    # OPTIONAL: conversational websocket port (remove if not needed)
+    - port: 3000
+      targetPort: 3000
   type: ClusterIP

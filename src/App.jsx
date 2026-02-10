@@ -23,6 +23,7 @@ import Profile from "./Pages/user/Profile";
 import Download from "./Pages/user/Download";
 import InterviewCredits from "./Pages/user/InterviewCredits";
 import PaymentSuccess from "./Pages/payment/PaymentSuccess";
+import WebSocketInterview from "./Pages/user/WebSocketInterview";
 
 
 function App() {
@@ -59,6 +60,7 @@ function App() {
             <Route path="/buy-credits" element={<InterviewCredits />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
           </Route>
+          <Route path="/websocket-interview" element={<WebSocketInterview />} />
         </Route>
       </Routes>
 

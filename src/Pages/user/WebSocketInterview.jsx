@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../../styles/WebSocketInterview.css';
 
 const WebSocketInterview = () => {
+  const navigate = useNavigate();
   const [status, setStatus] = useState('disconnected');
   const [transcript, setTranscript] = useState('');
   const [isStarted, setIsStarted] = useState(false);
   const [email, setEmail] = useState(null);
+  const [timerSeconds, setTimerSeconds] = useState(0);
   
   const socketRef = useRef(null);
   const mediaRecorderRef = useRef(null);
@@ -13,6 +16,8 @@ const WebSocketInterview = () => {
   const lastSpeechTimeRef = useRef(Date.now());
   const silenceCheckIntervalRef = useRef(null);
   const restartTimeIntervalRef = useRef(null);
+  const timerIntervalRef = useRef(null);
+  const isFirstConnectionRef = useRef(true);
   const qindexRef = useRef(null);
   
   const startButtonRef = useRef(null);
@@ -21,13 +26,38 @@ const WebSocketInterview = () => {
   const answerContainerRef = useRef(null);
   const videoDisplayRef = useRef(null);
   const statusIndicatorRef = useRef(null);
-  const resumeUploadBtnRef = useRef(null);
+  const dashboardButtonRef = useRef(null);
   const clearButtonRef = useRef(null);
   const sendQuestionRef = useRef(null);
   const questionBoxRef = useRef(null);
-  const fileInputRef = useRef(null);
 
   const maxSilenceDuration = 5 * 60 * 1000; // 5 minutes
+
+  const formatTime = (seconds) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  };
+
+  const startTimer = () => {
+    // Only reset timer on first connection, not on reconnection
+    if (isFirstConnectionRef.current) {
+      setTimerSeconds(0);
+      isFirstConnectionRef.current = false;
+    }
+    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+    timerIntervalRef.current = setInterval(() => {
+      setTimerSeconds(prev => prev + 1);
+    }, 1000);
+  };
+
+  const stopTimer = () => {
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+  };
 
   const updateStatus = (newStatus) => {
     setStatus(newStatus);
@@ -95,6 +125,7 @@ const WebSocketInterview = () => {
 
       socketRef.current.on('connect', () => {
         updateStatus('connected');
+        startTimer();
         mediaRecorderRef.current = new MediaRecorder(audioOnlyStream, {
           mimeType: 'audio/webm;codecs=opus',
         });
@@ -185,12 +216,14 @@ const WebSocketInterview = () => {
         console.error('Transcription error from server:', error);
         setTranscript(prev => prev + `\n⚠️ Error with Transcription: ${error}\n`);
         updateStatus('disconnected');
+        stopTimer();
         if (startButtonRef.current) startButtonRef.current.disabled = false;
         if (stopButtonRef.current) stopButtonRef.current.disabled = true;
       });
 
       socketRef.current.on('disconnect', () => {
         clearInterval(silenceCheckIntervalRef.current);
+        stopTimer();
         setTranscript(prev => prev + '\n🛑 Disconnected from server.\n');
         if (startButtonRef.current) startButtonRef.current.disabled = false;
         if (stopButtonRef.current) stopButtonRef.current.disabled = true;
@@ -201,6 +234,7 @@ const WebSocketInterview = () => {
         console.error('Socket.IO connect_error:', err);
         setTranscript(prev => prev + `\n⚠️ Connection Error: ${err}\n`);
         updateStatus('disconnected');
+        stopTimer();
         if (startButtonRef.current) startButtonRef.current.disabled = false;
         if (stopButtonRef.current) stopButtonRef.current.disabled = true;
       });
@@ -247,6 +281,8 @@ const WebSocketInterview = () => {
     clearInterval(silenceCheckIntervalRef.current);
     clearInterval(restartTimeIntervalRef.current);
     restartTimeIntervalRef.current = null;
+    stopTimer();
+    isFirstConnectionRef.current = true;
     
     setIsStarted(false);
     if (startButtonRef.current) startButtonRef.current.disabled = false;
@@ -270,35 +306,6 @@ const WebSocketInterview = () => {
     }
   };
 
-  const handleUploadFile = async () => {
-    try {
-      if (!socketRef.current) {
-        socketRef.current = io({
-          path: "/socket.io",
-          reconnection: true,
-          reconnectionDelay: 1000,
-          reconnectionDelayMax: 5000,
-          reconnectionAttempts: 5
-        });
-      }
-      const file = fileInputRef.current?.files[0];
-      if (!file) return alert("No file selected");
-      
-      const reader = new FileReader();
-      reader.onload = () => {
-        const arrayBuffer = reader.result;
-        socketRef.current.emit('uploadFile', {
-          fileName: file.name,
-          fileType: file.type,
-          fileBuffer: arrayBuffer
-        });
-      };
-      reader.readAsArrayBuffer(file);
-    } catch (error) {
-      updateStatus('error in file upload disconnected');
-    }
-  };
-
   const handleClearAnswer = async () => {
     try {
       if (answerContainerRef.current) {
@@ -307,6 +314,10 @@ const WebSocketInterview = () => {
     } catch (error) {
       updateStatus('error clearing answers');
     }
+  };
+
+  const handleDashboard = () => {
+    navigate('/home');
   };
 
   const handleSendQuestion = async () => {
@@ -327,6 +338,7 @@ const WebSocketInterview = () => {
   useEffect(() => {
     return () => {
       stopConnection(true);
+      stopTimer();
     };
   }, []);
 
@@ -337,19 +349,16 @@ const WebSocketInterview = () => {
           <img src="/logo.png" alt="Product Logo" />
         </div>
         <div className="file-actions-container">
-          <input 
-            type="file" 
-            className="form-control-file" 
-            id="fileInput"
-            ref={fileInputRef}
-          />
+          <div className="timer-display">
+            {formatTime(timerSeconds)}
+          </div>
           <button 
-            id="uploadButton" 
+            id="dashboardButton" 
             className="btn btn-primary btn-sm"
-            onClick={handleUploadFile}
-            ref={resumeUploadBtnRef}
+            onClick={handleDashboard}
+            ref={dashboardButtonRef}
           >
-            Upload File
+            Dashboard
           </button>
           <button 
             id="clearButton" 
@@ -364,13 +373,15 @@ const WebSocketInterview = () => {
 
       <div className="middle-row">
         <div className="portion-a">
-          <video 
-            id="videoDisplay" 
-            autoPlay 
-            muted 
-            ref={videoDisplayRef}
-            className="video-display"
-          />
+          <div className="video-wrapper">
+            <video 
+              id="videoDisplay" 
+              autoPlay 
+              muted 
+              ref={videoDisplayRef}
+              className="video-display"
+            />
+          </div>
           <div className="chat-controls">
             <span 
               id="statusIndicator" 
@@ -384,7 +395,7 @@ const WebSocketInterview = () => {
               onClick={startTranscription}
               ref={startButtonRef}
             >
-              Start Capture & Transcription
+              Connect
             </button>
             <button 
               id="stop" 
@@ -393,7 +404,7 @@ const WebSocketInterview = () => {
               onClick={() => stopConnection(true)}
               ref={stopButtonRef}
             >
-              Stop
+              Disconnect
             </button>
           </div>
           <textarea 

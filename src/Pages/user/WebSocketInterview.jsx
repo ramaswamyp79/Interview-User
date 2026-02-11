@@ -350,6 +350,7 @@ const WebSocketInterview = () => {
         </div>
         <div className="file-actions-container">
           <div className="timer-display">
+            <img src="/clock-timer.svg" alt="Timer" className="timer-icon" />
             {formatTime(timerSeconds)}
           </div>
           <button 

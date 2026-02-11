@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600&display=swap');
+
 :root {
   --base-font-size: 13px;
 }
@@ -48,12 +50,24 @@
 }
 
 .timer-display {
-  font-size: var(--base-font-size);
+  font-size: 15px;
   font-weight: 600;
   color: #333;
   min-width: 60px;
   text-align: center;
-  font-family: 'Courier New', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  margin-right: 1cm;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.timer-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.1));
 }
 
 .file-actions-container button {

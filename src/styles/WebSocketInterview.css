@@ -204,7 +204,7 @@
 }
 
 .transcript-box {
-  height: 7cm;
+  flex: 1 1 auto;
   width: 100%;
   border: 1px solid grey;
   margin-bottom: 10px;
@@ -212,6 +212,9 @@
   padding: 8px;
   resize: none;
   background-color: #f0f0f0;
+  min-height: 80px;
+  max-height: 60vh;
+  box-sizing: border-box;
 }
 
 .question-container {
@@ -223,6 +226,7 @@
   gap: 8px;
   padding: 0;
   background-color: transparent;
+  margin-top: auto; /* Pushes to bottom in flex column */
 }
 
 .question-container textarea {

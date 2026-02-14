@@ -5,7 +5,7 @@ import '../../styles/WebSocketInterview.css';
 const WebSocketInterview = () => {
   const navigate = useNavigate();
   const [status, setStatus] = useState('disconnected');
-  // const [transcript, setTranscript] = useState('');
+  const [transcript, setTranscript] = useState('');
   const [transcriptionResult, setTranscriptionResult] = useState('');
   const [isStarted, setIsStarted] = useState(false);
   const [email, setEmail] = useState(null);
@@ -176,23 +176,13 @@ const WebSocketInterview = () => {
       });
      
       socketRef.current.on('transcriptionResult', (data) => {
-        if (transcriptBoxRef.current) {
-          const liveDiv = transcriptBoxRef.current.querySelector('#live');
-          if (liveDiv && data && typeof data.transcript === 'string') {
-            liveDiv.innerText = data.transcript;
-          }
-        }
+        //setTranscript(data.transcript + '\n');
         lastSpeechTimeRef.current = Date.now();
         updateStatus('connected');
       });
     
-      socketRef.current.on('transcriptionSummary', (data) => {
-        if (transcriptBoxRef.current) {
-          const summaryDiv = transcriptBoxRef.current.querySelector('#summary');
-          if (summaryDiv) {
-            summaryDiv.innerText = data + '\n';
-          }
-        }
+      socketRef.current.on('transcriptionSummary', (data) => {         
+        setTranscript(data +  '\n');
         lastSpeechTimeRef.current = Date.now();
         updateStatus('connected');
       });
@@ -440,16 +430,14 @@ const WebSocketInterview = () => {
             </div>
           </div>
           
-            <div
+            <textarea
               id="transcript"
+              readOnly
+              placeholder="Transcription will appear here..."
               className="transcript-box form-control"
               ref={transcriptBoxRef}
-              style={{ minHeight: '120px', whiteSpace: 'pre-wrap', overflowY: 'auto' }}
-            >
-              <div id="summary" style={{ minHeight: '40px', marginLeft: 0, paddingLeft: 0 }}></div>
-              <br />
-              <div id="live" style={{ minHeight: '40px', marginLeft: 0, paddingLeft: 0 }}></div>
-            </div>
+              value={transcript}
+            />
         
           <div className="question-container">
             <textarea 

@@ -399,15 +399,18 @@ const WebSocketInterview = () => {
       </div>
 
       <div className="middle-row">
-        <div className="portion-a">
-          <div className="video-wrapper">
-            <video 
-              id="videoDisplay" 
-              autoPlay 
-              muted 
-              ref={videoDisplayRef}
-              className="video-display"
-            />
+        <div className="portion-a" style={{ flexShrink: 0 }}>
+          <div className="video-wrapper" style={{ height: '220px', minHeight: '220px', maxHeight: '220px', flexShrink: 0 }}>
+            <div style={{ height: '100%', minHeight: '100%', maxHeight: '100%', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <video 
+                id="videoDisplay" 
+                autoPlay 
+                muted 
+                ref={videoDisplayRef}
+                className="video-display"
+                style={{ height: '100%', width: '100%', objectFit: 'contain', flexShrink: 0 }}
+              />
+            </div>
           </div>
           <div className="chat-controls" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

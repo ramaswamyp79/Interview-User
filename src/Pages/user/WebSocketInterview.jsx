@@ -5,6 +5,9 @@ import '../../styles/WebSocketInterview.css';
 const WebSocketInterview = () => {
   const navigate = useNavigate();
   const [status, setStatus] = useState('disconnected');
+  const [statusMessage, setStatusMessage] = useState('Disconnected');
+  const [statusIcon, setStatusIcon] = useState('');
+  const [showSummary, setShowSummary] = useState(false);
   // const [transcript, setTranscript] = useState('');
   const [transcriptionResult, setTranscriptionResult] = useState('');
   const [isStarted, setIsStarted] = useState(false);
@@ -71,10 +74,35 @@ const WebSocketInterview = () => {
 
   const updateStatus = (newStatus) => {
     setStatus(newStatus);
+    let msg = '';
+    let icon = '';
+    switch (newStatus) {
+      case 'connecting':
+        msg = 'Connecting...';
+        icon = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#007bff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2v4"/><path d="M12 18v4"/><path d="M2 12h4"/><path d="M18 12h4"/></svg>`;
+        break;
+      case 'connected':
+        msg = 'Connected';
+        icon = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#28a745" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 12 15 15 9"/></svg>`;
+        break;
+      case 'disconnected':
+        msg = 'Disconnected';
+        icon = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#dc3545" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>`;
+        break;
+      case 'idle':
+        msg = 'Idle due to inactivity';
+        icon = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffc107" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>`;
+        break;
+      default:
+        msg = newStatus;
+        icon = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6c757d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><text x="12" y="16" textAnchor="middle" fontSize="10">?</text></svg>`;
+    }
+    setStatusMessage(msg);
+    setStatusIcon(icon);
     if (statusIndicatorRef.current) {
       statusIndicatorRef.current.className = 'status-badge';
       statusIndicatorRef.current.classList.add(newStatus);
-      statusIndicatorRef.current.title = newStatus.charAt(0).toUpperCase() + newStatus.slice(1);
+      statusIndicatorRef.current.title = msg;
     }
   };
 
@@ -180,6 +208,8 @@ const WebSocketInterview = () => {
           const liveDiv = transcriptBoxRef.current.querySelector('#live');
           if (liveDiv && data && typeof data.transcript === 'string') {
             liveDiv.innerText = data.transcript;
+            // Scroll to bottom after updating live
+            transcriptBoxRef.current.scrollTop = transcriptBoxRef.current.scrollHeight;
           }
         }
         lastSpeechTimeRef.current = Date.now();
@@ -187,12 +217,19 @@ const WebSocketInterview = () => {
       });
     
       socketRef.current.on('transcriptionSummary', (data) => {
-        if (transcriptBoxRef.current) {
-          const summaryDiv = transcriptBoxRef.current.querySelector('#summary');
-          if (summaryDiv) {
-            summaryDiv.innerText = data + '\n';
-          }
+        if (!showSummary) {
+          setShowSummary(true);
         }
+        setTimeout(() => {
+          if (transcriptBoxRef.current) {
+            const summaryDiv = transcriptBoxRef.current.querySelector('#summary');
+            if (summaryDiv) {
+              summaryDiv.innerText = data + '\n';
+              // Scroll to bottom after updating summary
+              transcriptBoxRef.current.scrollTop = transcriptBoxRef.current.scrollHeight;
+            }
+          }
+        }, 0);
         lastSpeechTimeRef.current = Date.now();
         updateStatus('connected');
       });
@@ -240,7 +277,8 @@ const WebSocketInterview = () => {
 
       socketRef.current.on('transcriptionError', (error) => {
         console.error('Transcription error from server:', error);
-        // ...existing code...
+        setStatusMessage('Transcription error: ' + error);
+        setStatusIcon(`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#dc3545" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>`);
         updateStatus('disconnected');
         stopTimer();
         if (startButtonRef.current) startButtonRef.current.disabled = false;
@@ -258,7 +296,8 @@ const WebSocketInterview = () => {
 
       socketRef.current.on('connect_error', (err) => {
         console.error('Socket.IO connect_error:', err);
-        // ...existing code...
+        setStatusMessage('Connection error: ' + err.message);
+        setStatusIcon(`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#dc3545" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>`);
         updateStatus('disconnected');
         stopTimer();
         if (startButtonRef.current) startButtonRef.current.disabled = false;
@@ -337,7 +376,10 @@ const WebSocketInterview = () => {
       if (answerContainerRef.current) {
         answerContainerRef.current.innerHTML = "";
       }
+      setStatusMessage('Answers cleared');
+      setStatusIcon(`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#17a2b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 12 15 15 9"/></svg>`);
     } catch (error) {
+      setStatusMessage('Error clearing answers');
       updateStatus('error clearing answers');
     }
   };
@@ -352,10 +394,14 @@ const WebSocketInterview = () => {
       if (question && socketRef.current?.connected) {
         socketRef.current.emit("sendPrompt", { prompt: question });
         if (questionBoxRef.current) questionBoxRef.current.value = '';
+        setStatusMessage('Question sent');
+        setStatusIcon(`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#007bff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 12 15 15 9"/></svg>`);
       } else {
+        setStatusMessage('Socket not connected or question empty');
         console.error("Socket is not connected or question is empty.");
       }
     } catch (error) {
+      setStatusMessage('Error sending question');
       updateStatus('error sending question');
     }
   };
@@ -400,7 +446,7 @@ const WebSocketInterview = () => {
 
       <div className="middle-row">
         <div className="portion-a" style={{ flexShrink: 0 }}>
-          <div className="video-wrapper" style={{ height: '220px', minHeight: '220px', maxHeight: '220px', flexShrink: 0 }}>
+          <div className="video-wrapper" style={{ height: '170px', minHeight: '170px', maxHeight: '170px', flexShrink: 0 }}>
             <div style={{ height: '100%', minHeight: '100%', maxHeight: '100%', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <video 
                 id="videoDisplay" 
@@ -438,22 +484,29 @@ const WebSocketInterview = () => {
                 Disconnect
               </button>
             </div>
-            <div id="statusMessage" style={{ marginLeft: 'auto', minWidth: '180px', textAlign: 'right', color: '#555', fontWeight: 500 }}>
-              {/* statusMessage removed, revert to previous code */}
+            {/* Status column moved to right, non-bold, black, with SVG icon */}
+            <div id="statusColumn" style={{ marginLeft: 'auto', minWidth: '220px', textAlign: 'right', color: '#222', fontWeight: 400, fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {/* SVG symbol and message both displayed, right aligned */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%', gap: '8px' }}>
+                <span dangerouslySetInnerHTML={{ __html: statusIcon }} />
+                <span>{statusMessage}</span>
+              </div>
             </div>
           </div>
-          
-            <div
-              id="transcript"
-              className="transcript-box form-control"
-              ref={transcriptBoxRef}
-              style={{ minHeight: '120px', whiteSpace: 'pre-wrap', overflowY: 'auto' }}
-            >
-              <div id="summary" style={{ minHeight: '40px', marginLeft: 0, paddingLeft: 0 }}></div>
-              <br />
-              <div id="live" style={{ minHeight: '40px', marginLeft: 0, paddingLeft: 0 }}></div>
-            </div>
-        
+          <div
+            id="transcript"
+            className="transcript-box form-control"
+            ref={transcriptBoxRef}
+            style={{ minHeight: '170px', whiteSpace: 'pre-wrap', overflowY: 'auto' }}
+          >
+            {showSummary && (
+              <>
+                <div id="summary" className="transcript-aligned"></div>
+                <br id="summarybr" />
+              </>
+            )}
+            <div id="live" className="transcript-aligned"></div>
+          </div>
           <div className="question-container">
             <textarea 
               id="questionBox" 

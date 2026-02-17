@@ -357,6 +357,28 @@ const WebSocketInterview = () => {
     if (shouldStopMedia) {
       stopLocalMedia();
     }
+      // 1. Stop media recorder if recording
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+        mediaRecorderRef.current.stop();
+      }
+      // 2. Disconnect socket if connected
+      if (socketRef.current && socketRef.current.connected) {
+        socketRef.current.disconnect();
+      }
+      // 3. Clear silence and restart intervals
+      clearInterval(silenceCheckIntervalRef.current);
+      silenceCheckIntervalRef.current = null;
+      clearInterval(restartTimeIntervalRef.current);
+      restartTimeIntervalRef.current = null;
+      // 4. Reset transcription timer
+      stopTimer();
+      // 5. Update UI status to disconnected
+      updateStatus('disconnected');
+      setIsStarted(false);
+      isFirstConnectionRef.current = true;
+      // 6. Toggle buttons
+      if (startButtonRef.current) startButtonRef.current.disabled = false;
+      if (stopButtonRef.current) stopButtonRef.current.disabled = true;
   };
 
   const stopLocalMedia = () => {
@@ -474,11 +496,15 @@ const WebSocketInterview = () => {
               >
                 Connect
               </button>
+              
               <button 
                 id="stop" 
                 className="btn btn-danger btn-sm" 
-                disabled
-                onClick={() => stopConnection(true)}
+                disabled={!isStarted}
+                onClick={() => { 
+                  console.log('Disconnect button clicked');
+                  stopConnection(true);
+                }}
                 ref={stopButtonRef}
               >
                 Disconnect

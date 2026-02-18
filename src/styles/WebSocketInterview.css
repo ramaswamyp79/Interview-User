@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600&display=swap');
 /* Ensure summary and live divs are perfectly aligned to the left */
 .transcript-aligned {
   margin-left: 0 !important;
@@ -6,7 +7,6 @@
   min-height: 40px;
   box-sizing: border-box;
 }
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600&display=swap');
 
 :root {
   --base-font-size: 13px;

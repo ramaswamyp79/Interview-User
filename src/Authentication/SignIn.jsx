@@ -170,6 +170,14 @@ const SignIn = () => {
                 >
                   {showPassword ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
                 </button>
+                <div className="text-right mt-2">
+                  <span
+                    className="text-sm text-indigo-700 font-semibold cursor-pointer hover:underline"
+                    onClick={() => navigate("/forgot-password")}
+                  >
+                    Forgot Password?
+                  </span>
+                </div>
               </div>
 
               <button

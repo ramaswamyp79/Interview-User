@@ -37,15 +37,6 @@ const WebSocketInterview = () => {
 
   const maxSilenceDuration = 5 * 60 * 1000; // 5 minutes
 
-  // Flicker transcript update method
-  const setTranscriptFlicker = (message) => {
-   
-      const currentValue = transcriptBoxRef.current.value;
-      transcriptBoxRef.current.value = currentValue + message;
-      
-   
-  };
-
   const formatTime = (seconds) => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
@@ -109,20 +100,19 @@ const WebSocketInterview = () => {
   const startTranscriptionProcess = async () => {
     updateStatus('connecting');
     try {
-      let currentEmail = email;
-      
+
+      // Always get email from sessionStorage if available
+      let currentEmail = sessionStorage.getItem('interview_email');
       // Only request media if a stream doesn't already exist
       if (!localMediaStreamRef.current) {
         if (!currentEmail) {
           currentEmail = prompt("Please Confirm Your Email Address");
           setEmail(currentEmail);
         }
-        
         localMediaStreamRef.current = await navigator.mediaDevices.getDisplayMedia({
           video: { width: { ideal: 640 }, height: { ideal: 360 } },
           audio: true
         });
-        
         if (videoDisplayRef.current) {
           videoDisplayRef.current.srcObject = localMediaStreamRef.current;
         }
@@ -183,6 +173,7 @@ const WebSocketInterview = () => {
         if (stopButtonRef.current) stopButtonRef.current.disabled = false;
         // ...existing code...
 
+
         socketRef.current.emit('startTranscription', {
           audioEncoding: 'WEBM_OPUS',
           audioSampleRate: 48000,
@@ -236,9 +227,12 @@ const WebSocketInterview = () => {
 
       socketRef.current.on('shortanswer', (data) => {
         if (answerContainerRef.current) {
-          const shortanswerdiv = answerContainerRef.current.querySelector('div[name="shortanswer"]');
-          if (shortanswerdiv) {
-            shortanswerdiv.innerHTML += data;
+          const answerdiv = answerContainerRef.current.querySelector(`#${qindexRef.current}`);
+          if (answerdiv) {
+            const shortanswerdiv = answerdiv.querySelector('div[name="shortanswer"]');
+            if (shortanswerdiv) {
+              shortanswerdiv.innerHTML += data;
+            }
           }
         }
         updateStatus('connected');

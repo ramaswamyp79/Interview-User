@@ -407,14 +407,16 @@ const WebSocketInterview = () => {
   const handleSendQuestion = async () => {
     try {
       const question = questionBoxRef.current?.value.trim();
-      if (question && socketRef.current?.connected) {
-        socketRef.current.emit("sendPrompt", { prompt: question });
+      const clientEmail = sessionStorage.getItem('interview_email');
+      if (socketRef.current?.connected) {
+        const socketId = socketRef.current.id;
+        socketRef.current.emit("sendPrompt", { prompt: question, clientEmail: clientEmail, socketId: socketId });
         if (questionBoxRef.current) questionBoxRef.current.value = '';
         setStatusMessage('Question sent');
         setStatusIcon(`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#007bff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 12 15 15 9"/></svg>`);
       } else {
-        setStatusMessage('Socket not connected or question empty');
-        console.error("Socket is not connected or question is empty.");
+        setStatusMessage('Socket not connected');
+        console.error("Socket is not connected.");
       }
     } catch (error) {
       setStatusMessage('Error sending question');

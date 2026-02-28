@@ -83,18 +83,35 @@
   height: auto;
   width: auto;
   padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+  transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 1px 2px rgba(0, 0, 0, 0.18);
 }
 
 .file-actions-container button#dashboardButton {
-  background-color: #007bff;
+  background: linear-gradient(to bottom, #3e98ff 0%, #1f78de 100%);
   color: white;
-  border: 1px solid #007bff;
+  border: 1px solid #1b66bf;
 }
 
 .file-actions-container button#clearButton {
-  background-color: #ffc107;
+  background: linear-gradient(to bottom, #ffd85a 0%, #f0bc2f 100%);
   color: #212529;
-  border: 1px solid #ffc107;
+  border: 1px solid #d5a424;
+}
+
+.file-actions-container button#dashboardButton:hover,
+.file-actions-container button#clearButton:hover {
+  filter: brightness(1.04);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.32), 0 2px 5px rgba(0, 0, 0, 0.22);
+  transform: translateY(-1px);
+}
+
+.file-actions-container button#dashboardButton:active,
+.file-actions-container button#clearButton:active {
+  transform: translateY(0);
+  box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.2), 0 1px 1px rgba(0, 0, 0, 0.16);
 }
 
 
@@ -129,7 +146,7 @@
 .video-wrapper {
   width: 100%;
   border: 1px solid #333;
-  border-radius: 9px;
+  border-radius: 9px 0 0 9px;
   margin-bottom: 10px;
   overflow: hidden;
   background: #000;
@@ -161,12 +178,38 @@
 
 .chat-controls button#start,
 .chat-controls button#stop {
-  background-color: #007bff;
-  color: white;
-  border: 1px solid #007bff;
+  color: #ffffff;
+  font-weight: 600;
+  border: 1px solid transparent;
   border-radius: 4px;
   padding: 0.25rem 0.5rem;
   font-size: var(--base-font-size);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 1px 2px rgba(0, 0, 0, 0.18);
+  transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+}
+
+.chat-controls button#start {
+  background: linear-gradient(to bottom, #6cb6f4 0%, #4d9be8 100%);
+  border-color: #3e89d4;
+}
+
+.chat-controls button#stop {
+  background: linear-gradient(to bottom, #ef5962 0%, #d93643 100%);
+  border-color: #bf2f3a;
+}
+
+.chat-controls button#start:hover:not(:disabled),
+.chat-controls button#stop:hover:not(:disabled) {
+  filter: brightness(1.04);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.32), 0 2px 5px rgba(0, 0, 0, 0.22);
+  transform: translateY(-1px);
+}
+
+.chat-controls button#start:active:not(:disabled),
+.chat-controls button#stop:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.2), 0 1px 1px rgba(0, 0, 0, 0.16);
 }
 
 .chat-controls button#stop:disabled {
@@ -216,12 +259,14 @@
 .transcript-box {
   flex: 1 1 auto;
   width: 100%;
-  border: 1px solid grey;
+  border: 1px solid rgb(187, 183, 183);
+  border-radius: 9px 0 0 9px;
+  color: 1px solid grey;
   margin-bottom: 10px;
   font-size: var(--base-font-size);
   padding: 8px;
   resize: none;
-  background-color: #f0f0f0;
+  background-color: #ffffff;
   min-height: 80px;
   max-height: 60vh;
   box-sizing: border-box;
@@ -256,9 +301,25 @@
 }
 
 .question-container button#sendQuestion {
-  background-color: #17a2b8;
-  color: white;
-  border: 1px solid #17a2b8;
+  background: linear-gradient(to bottom, #2fb9cf 0%, #169bb0 100%);
+  color: #ffffff;
+  border: 1px solid #12879a;
+  border-radius: 4px;
+  font-weight: 600;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 1px 2px rgba(0, 0, 0, 0.18);
+  transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+}
+
+.question-container button#sendQuestion:hover {
+  filter: brightness(1.04);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.32), 0 2px 5px rgba(0, 0, 0, 0.22);
+  transform: translateY(-1px);
+}
+
+.question-container button#sendQuestion:active {
+  transform: translateY(0);
+  box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.2), 0 1px 1px rgba(0, 0, 0, 0.16);
 }
 
 .answer-container {
@@ -266,6 +327,7 @@
   width: 100%;
   border: 1px solid grey;
   font-size: var(--base-font-size);
+  
   padding: 10px;
   overflow-y: auto;
   background-color: #fafafa;

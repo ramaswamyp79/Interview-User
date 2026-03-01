@@ -227,7 +227,7 @@ const WebSocketInterview = () => {
 
       socketRef.current.on('shortanswer', (data) => {
         if (answerContainerRef.current) {
-          const answerdiv = answerContainerRef.current.querySelector(`#${qindexRef.current}`);
+          const answerdiv = answerContainerRef.current.querySelector(`#q${data.qindex}`);
           if (answerdiv) {
             const shortanswerdiv = answerdiv.querySelector('div[name="shortanswer"]');
             if (shortanswerdiv) {
@@ -240,7 +240,7 @@ const WebSocketInterview = () => {
 
       socketRef.current.on('question', (data) => {
         if (answerContainerRef.current) {
-          answerContainerRef.current.innerHTML += data;
+          answerContainerRef.current.innerHTML += data.message;
         }
         updateStatus('connected');
       });
@@ -258,11 +258,15 @@ const WebSocketInterview = () => {
 
       socketRef.current.on('longanswer', (data) => {
         if (answerContainerRef.current) {
-          const answerdiv = answerContainerRef.current.querySelector(`#${qindexRef.current}`);
+          const answerdiv = answerContainerRef.current.querySelector(`#q${data.qindex}`);
           if (answerdiv) {
             const longanswerdiv = answerdiv.querySelector('div[name="longanswer"]');
             if (longanswerdiv) {
-              longanswerdiv.innerHTML += data;
+              let msg = data.message;
+              if (typeof msg === 'string') {
+                msg = msg.replace(/\|\|/g, '<br><br>');
+              }
+              longanswerdiv.innerHTML += msg;
             }
           }
         }

@@ -13,7 +13,7 @@ const WebSocketInterview = () => {
   const [isStarted, setIsStarted] = useState(false);
   const [email, setEmail] = useState(null);
   const [timerSeconds, setTimerSeconds] = useState(0);
-  
+
   const socketRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const localMediaStreamRef = useRef(null);
@@ -23,7 +23,7 @@ const WebSocketInterview = () => {
   const timerIntervalRef = useRef(null);
   const isFirstConnectionRef = useRef(true);
   const qindexRef = useRef(null);
-  
+
   const startButtonRef = useRef(null);
   const stopButtonRef = useRef(null);
   const transcriptBoxRef = useRef(null);
@@ -193,7 +193,7 @@ const WebSocketInterview = () => {
           }
         }, 60 * 1000);
       });
-     
+
       socketRef.current.on('transcriptionResult', (data) => {
         if (transcriptBoxRef.current) {
           const liveDiv = transcriptBoxRef.current.querySelector('#live');
@@ -206,7 +206,7 @@ const WebSocketInterview = () => {
         lastSpeechTimeRef.current = Date.now();
         updateStatus('connected');
       });
-    
+
       socketRef.current.on('transcriptionSummary', (data) => {
         if (!showSummary) {
           setShowSummary(true);
@@ -231,7 +231,11 @@ const WebSocketInterview = () => {
           if (answerdiv) {
             const shortanswerdiv = answerdiv.querySelector('div[name="shortanswer"]');
             if (shortanswerdiv) {
-              shortanswerdiv.innerHTML += data;
+              let msg = data.message;
+              if (typeof msg === 'string') {
+                msg = msg.replace(/\|\|/g, '<br><br>');
+              }
+              shortanswerdiv.innerHTML += msg;
             }
           }
         }
@@ -346,7 +350,7 @@ const WebSocketInterview = () => {
     restartTimeIntervalRef.current = null;
     stopTimer();
     isFirstConnectionRef.current = true;
-    
+
     setIsStarted(false);
     if (startButtonRef.current) startButtonRef.current.disabled = false;
     if (stopButtonRef.current) stopButtonRef.current.disabled = true;
@@ -355,28 +359,28 @@ const WebSocketInterview = () => {
     if (shouldStopMedia) {
       stopLocalMedia();
     }
-      // 1. Stop media recorder if recording
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-        mediaRecorderRef.current.stop();
-      }
-      // 2. Disconnect socket if connected
-      if (socketRef.current && socketRef.current.connected) {
-        socketRef.current.disconnect();
-      }
-      // 3. Clear silence and restart intervals
-      clearInterval(silenceCheckIntervalRef.current);
-      silenceCheckIntervalRef.current = null;
-      clearInterval(restartTimeIntervalRef.current);
-      restartTimeIntervalRef.current = null;
-      // 4. Reset transcription timer
-      stopTimer();
-      // 5. Update UI status to disconnected
-      updateStatus('disconnected');
-      setIsStarted(false);
-      isFirstConnectionRef.current = true;
-      // 6. Toggle buttons
-      if (startButtonRef.current) startButtonRef.current.disabled = false;
-      if (stopButtonRef.current) stopButtonRef.current.disabled = true;
+    // 1. Stop media recorder if recording
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      mediaRecorderRef.current.stop();
+    }
+    // 2. Disconnect socket if connected
+    if (socketRef.current && socketRef.current.connected) {
+      socketRef.current.disconnect();
+    }
+    // 3. Clear silence and restart intervals
+    clearInterval(silenceCheckIntervalRef.current);
+    silenceCheckIntervalRef.current = null;
+    clearInterval(restartTimeIntervalRef.current);
+    restartTimeIntervalRef.current = null;
+    // 4. Reset transcription timer
+    stopTimer();
+    // 5. Update UI status to disconnected
+    updateStatus('disconnected');
+    setIsStarted(false);
+    isFirstConnectionRef.current = true;
+    // 6. Toggle buttons
+    if (startButtonRef.current) startButtonRef.current.disabled = false;
+    if (stopButtonRef.current) stopButtonRef.current.disabled = true;
   };
 
   const stopLocalMedia = () => {
@@ -447,16 +451,16 @@ const WebSocketInterview = () => {
             <img src="/clock-timer.svg" alt="Timer" className="timer-icon" />
             {formatTime(timerSeconds)}
           </div>
-          <button 
-            id="dashboardButton" 
+          <button
+            id="dashboardButton"
             className="btn btn-primary btn-sm"
             onClick={handleDashboard}
             ref={dashboardButtonRef}
           >
             Dashboard
           </button>
-          <button 
-            id="clearButton" 
+          <button
+            id="clearButton"
             className="btn btn-warning btn-sm"
             onClick={handleClearAnswer}
             ref={clearButtonRef}
@@ -470,10 +474,10 @@ const WebSocketInterview = () => {
         <div className="portion-a" style={{ flexShrink: 0 }}>
           <div className="video-wrapper" style={{ height: '170px', minHeight: '170px', maxHeight: '170px', flexShrink: 0 }}>
             <div style={{ height: '100%', minHeight: '100%', maxHeight: '100%', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <video 
-                id="videoDisplay" 
-                autoPlay 
-                muted 
+              <video
+                id="videoDisplay"
+                autoPlay
+                muted
                 ref={videoDisplayRef}
                 className="video-display"
                 style={{ height: '100%', width: '100%', objectFit: 'contain', flexShrink: 0 }}
@@ -482,26 +486,26 @@ const WebSocketInterview = () => {
           </div>
           <div className="chat-controls" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span 
-                id="statusIndicator" 
-                className="status-badge disconnected" 
+              <span
+                id="statusIndicator"
+                className="status-badge disconnected"
                 title="Disconnected"
                 ref={statusIndicatorRef}
               />
-              <button 
-                id="start" 
+              <button
+                id="start"
                 className="btn btn-primary btn-sm"
                 onClick={startTranscription}
                 ref={startButtonRef}
               >
                 Connect
               </button>
-              
-              <button 
-                id="stop" 
-                className="btn btn-danger btn-sm" 
+
+              <button
+                id="stop"
+                className="btn btn-danger btn-sm"
                 disabled={!isStarted}
-                onClick={() => { 
+                onClick={() => {
                   console.log('Disconnect button clicked');
                   stopConnection(true);
                 }}
@@ -534,14 +538,14 @@ const WebSocketInterview = () => {
             <div id="live" className="transcript-aligned"></div>
           </div>
           <div className="question-container">
-            <textarea 
-              id="questionBox" 
-              placeholder="Enter your question..." 
+            <textarea
+              id="questionBox"
+              placeholder="Enter your question..."
               className="form-control"
               ref={questionBoxRef}
             />
-            <button 
-              id="sendQuestion" 
+            <button
+              id="sendQuestion"
               className="btn btn-info btn-sm"
               onClick={handleSendQuestion}
               ref={sendQuestionRef}
@@ -551,8 +555,8 @@ const WebSocketInterview = () => {
           </div>
         </div>
         <div className="portion-b">
-          <div 
-            id="answer-container" 
+          <div
+            id="answer-container"
             className="answer-container"
             ref={answerContainerRef}
           />

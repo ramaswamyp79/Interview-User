@@ -1,0 +1,9 @@
+# We See Deployment File Issue 
+kubectl apply -f user-frontend-deployment.yaml
+
+Why Get two pods
+
+PS C:\Users\PrabuRamaswamy\documents\github\Interview-User> kubectl get pods -l app=user-frontend -w
+NAME                            READY   STATUS    RESTARTS   AGE
+user-frontend-55b48dfb4-hn8v4   1/1     Running   0          38m
+user-frontend-89c4485b-29zmh    1/1     Running   0          30s

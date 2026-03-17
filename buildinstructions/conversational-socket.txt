@@ -1,0 +1,6 @@
+docker build -t conversational:latest .
+docker tag conversational-socket:latest gcr.io/gen-lang-client-0149291660/conversational:latest
+docker push gcr.io/gen-lang-client-0149291660/conversational:latest
+
+gs://bucket-name/folder1/folder2/file.ext
+

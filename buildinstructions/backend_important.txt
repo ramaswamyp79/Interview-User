@@ -1,0 +1,30 @@
+docker build --no-cache --pull -t gcr.io/gen-lang-client-0149291660/backend:latest .
+
+docker run --rm -it gcr.io/gen-lang-client-0149291660/backend:latest sh -c "cat /app/src/server.js"
+
+docker push gcr.io/gen-lang-client-0149291660/backend:latest
+
+
+kubectl set image deployment/backend backend=gcr.io/gen-lang-client-0149291660/backend:latest
+kubectl rollout restart deployment backend
+
+kubectl get pods -l app=backend
+kubectl exec -it <POD_NAME> -- sh -c "cat /app/src/server.js"
+
+
+kubectl logs <pod-name>
+
+
+kubectl exec -it backend-74f569d548-vb87s -- sh -c "cat /app/src/server.js"
+
+
+#List down all the docker images
+
+docker images
+docker rmi gcr.io/gen-lang-client-0149291660/backend:latest
+
+
+kubectl apply -f backend-backendconfig.yaml
+kubectl apply -f backend-service.yaml
+kubectl rollout restart deployment backend
+

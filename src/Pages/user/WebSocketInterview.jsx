@@ -267,8 +267,9 @@ const WebSocketInterview = () => {
             const longanswerdiv = answerdiv.querySelector('div[name="longanswer"]');
             if (longanswerdiv) {
               let msg = data.message;
-              if (typeof msg === 'string') {
-                msg = msg.replace(/\|\|/g, '<br><br>');
+              if (typeof msg === 'string') {                
+                 msg = msg.replace(/\*\*/g, '');                 
+                 msg = msg.replace(/\|\|/g, '<br><br>');
               }
               longanswerdiv.innerHTML += msg;
             }

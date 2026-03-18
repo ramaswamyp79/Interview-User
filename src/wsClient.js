@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 const sessionId = uuidv4();
 
 // Sends logs to server without blocking UI
-// ...existing code...
+// ...existing code...updated
 
 function sendClientLog(entry) {
   const logEntry = {

@@ -260,56 +260,22 @@ const WebSocketInterview = () => {
         }
       });
 
-      const buffers = {};
-      const insideTag = {};
-
       socketRef.current.on('longanswer', (data) => {
-        if (!buffers[data.qindex]) buffers[data.qindex] = '';
-        if (!insideTag[data.qindex]) insideTag[data.qindex] = false;
-
         if (answerContainerRef.current) {
           const answerdiv = answerContainerRef.current.querySelector(`#q${data.qindex}`);
           if (answerdiv) {
             const longanswerdiv = answerdiv.querySelector('div[name="longanswer"]');
             if (longanswerdiv) {
-
               let msg = data.message;
-              let output = '';
-
-              for (let i = 0; i < msg.length; i++) {
-                let ch = msg[i];
-
-                if (ch === '⟦') {
-                  insideTag[data.qindex] = true;
-                  buffers[data.qindex] = '';
-                }
-                else if (ch === '⟧' && insideTag[data.qindex]) {
-                  // complete tag found
-                  //output += `<b>${buffers[data.qindex]}</b>`;
-                  output += `<b style="color: forestgreen;">${buffers[data.qindex]}</b>`;
-                  buffers[data.qindex] = '';
-                  insideTag[data.qindex] = false;
-                }
-                else if (insideTag[data.qindex]) {
-                  // keep buffering tag content
-                  buffers[data.qindex] += ch;
-                }
-                else {
-                  // normal text
-                  output += ch;
-                }
+              if (typeof msg === 'string') {                
+                 msg = msg.replace(/\*\*/g, '');                 
+                 msg = msg.replace(/\|\|/g, '<br><br>');
               }
-
-              // formatting
-              output = output.replace(/\*\*/g, '');
-              output = output.replace(/\|\|/g, '<br><br>');
-
-              longanswerdiv.innerHTML += output;
-
-              updateStatus('connected');
+              longanswerdiv.innerHTML += msg;
             }
           }
         }
+        updateStatus('connected');
       });
 
       socketRef.current.on('transcriptionError', (error) => {

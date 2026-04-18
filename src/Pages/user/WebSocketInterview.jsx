@@ -35,6 +35,10 @@ const WebSocketInterview = () => {
   const sendQuestionRef = useRef(null);
   const questionBoxRef = useRef(null);
 
+  const buffers = useRef({});
+  const insideTag = useRef({});
+  const tagType = useRef({});
+
   const maxSilenceDuration = 5 * 60 * 1000; // 5 minutes
 
   const formatTime = (seconds) => {
@@ -260,13 +264,9 @@ const WebSocketInterview = () => {
         }
       });
 
-      const buffers = {};
-      const insideTag = {};
+
 
       socketRef.current.on('longanswer', (data) => {
-        if (!buffers[data.qindex]) buffers[data.qindex] = '';
-        if (!insideTag[data.qindex]) insideTag[data.qindex] = false;
-
         if (answerContainerRef.current) {
           const answerdiv = answerContainerRef.current.querySelector(`#q${data.qindex}`);
           if (answerdiv) {
@@ -276,40 +276,79 @@ const WebSocketInterview = () => {
               let msg = data.message;
               let output = '';
 
-              for (let i = 0; i < msg.length; i++) {
-                let ch = msg[i];
+              if (typeof msg === 'string') {
 
-                if (ch === '⟦') {
-                  insideTag[data.qindex] = true;
-                  buffers[data.qindex] = '';
+                if (buffers.current[data.qindex] === undefined)
+                  buffers.current[data.qindex] = '';
+
+                if (insideTag.current[data.qindex] === undefined)
+                  insideTag.current[data.qindex] = false;
+
+                if (tagType.current[data.qindex] === undefined)
+                  tagType.current[data.qindex] = '';
+
+                for (let i = 0; i < msg.length; i++) {
+                  const char = msg[i];
+
+                  // 🟢 START HEADING
+                  if (char === '⟬') {
+                    insideTag.current[data.qindex] = true;
+                    tagType.current[data.qindex] = 'heading';
+                    buffers.current[data.qindex] = '';
+                    continue;
+                  }
+
+                  // 🟢 START KEYWORD
+                  if (char === '⟦') {
+                    insideTag.current[data.qindex] = true;
+                    tagType.current[data.qindex] = 'keyword';
+                    buffers.current[data.qindex] = '';
+                    continue;
+                  }
+
+                  // 🔴 END HEADING
+                  if (char === '⟭' && tagType.current[data.qindex] === 'heading') {
+                    insideTag.current[data.qindex] = false;
+                    output += `<b style="color: forestgreen;">${buffers.current[data.qindex]}</b>`;
+                    buffers.current[data.qindex] = '';
+                    tagType.current[data.qindex] = '';
+                    continue;
+                  }
+
+                  // 🔴 END KEYWORD
+                  if (char === '⟧' && tagType.current[data.qindex] === 'keyword') {
+                    insideTag.current[data.qindex] = false;
+                    output += `<b>${buffers.current[data.qindex]}</b>`;
+                    buffers.current[data.qindex] = '';
+                    tagType.current[data.qindex] = '';
+                    continue;
+                  }
+
+                  // 🟡 HANDLE BULLET FORMATTING || Potential Issue
+                  if (!insideTag.current[data.qindex] && char === '•') {
+                    //output += '<br>•';
+                    continue;
+                  }
+
+                  // 📦 BUFFER OR NORMAL TEXT
+                  if (insideTag.current[data.qindex]) {
+                    buffers.current[data.qindex] += char;
+                  } else {
+                    output += char;
+                  }
                 }
-                else if (ch === '⟧' && insideTag[data.qindex]) {
-                  // complete tag found
-                  //output += `<b>${buffers[data.qindex]}</b>`;
-                  output += `<b style="color: forestgreen;">${buffers[data.qindex]}</b>`;
-                  buffers[data.qindex] = '';
-                  insideTag[data.qindex] = false;
-                }
-                else if (insideTag[data.qindex]) {
-                  // keep buffering tag content
-                  buffers[data.qindex] += ch;
-                }
-                else {
-                  // normal text
-                  output += ch;
-                }
+
+                // formatting cleanup
+                output = output.replace(/\*\*/g, '');
+                output = output.replace(/\|\|/g, '<br><br>');
               }
 
-              // formatting
-              output = output.replace(/\*\*/g, '');
-              output = output.replace(/\|\|/g, '<br><br>');
-
               longanswerdiv.innerHTML += output;
-
-              updateStatus('connected');
             }
           }
         }
+
+        updateStatus('connected');
       });
 
       socketRef.current.on('transcriptionError', (error) => {

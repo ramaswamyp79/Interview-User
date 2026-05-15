@@ -23,6 +23,7 @@ const WebSocketInterview = () => {
   const timerIntervalRef = useRef(null);
   const isFirstConnectionRef = useRef(true);
   const qindexRef = useRef(null);
+  const transcriptionReadyRef = useRef(false);
 
   const startButtonRef = useRef(null);
   const stopButtonRef = useRef(null);
@@ -160,6 +161,7 @@ const WebSocketInterview = () => {
       const audioOnlyStream = new MediaStream(audioTracks);
 
       // Disconnect existing socket if any before creating a new one
+      transcriptionReadyRef.current = false;
       if (socketRef.current && socketRef.current.connected) {
         socketRef.current.disconnect();
       }
@@ -182,7 +184,7 @@ const WebSocketInterview = () => {
         });
 
         mediaRecorderRef.current.ondataavailable = async (event) => {
-          if (event.data.size > 0 && socketRef.current?.connected) {
+          if (event.data.size > 0 && socketRef.current?.connected && transcriptionReadyRef.current) {
             const buffer = await event.data.arrayBuffer();
             socketRef.current.emit('audioChunk', buffer);
             lastSpeechTimeRef.current = Date.now();
@@ -190,7 +192,6 @@ const WebSocketInterview = () => {
           }
         };
 
-        mediaRecorderRef.current.start(250);
         setIsStarted(true);
         if (startButtonRef.current) startButtonRef.current.disabled = true;
         if (stopButtonRef.current) stopButtonRef.current.disabled = false;
@@ -215,6 +216,14 @@ const WebSocketInterview = () => {
             updateStatus('connected');
           }
         }, 60 * 1000);
+      });
+
+      socketRef.current.on('transcriptionReady', () => {
+        transcriptionReadyRef.current = true;
+
+        if (mediaRecorderRef.current?.state === 'inactive') {
+          mediaRecorderRef.current.start(250);
+        }
       });
 
       socketRef.current.on('transcriptionResult', (data) => {
@@ -398,6 +407,7 @@ const WebSocketInterview = () => {
       });
 
       socketRef.current.on('disconnect', () => {
+        transcriptionReadyRef.current = false;
         clearInterval(silenceCheckIntervalRef.current);
         stopTimer();
         // ...existing code...
@@ -435,6 +445,7 @@ const WebSocketInterview = () => {
 
   const restartTranscription = () => {
     console.log("Restarting transcription...");
+    transcriptionReadyRef.current = false;
     if (mediaRecorderRef.current?.state === 'recording') {
       mediaRecorderRef.current.stop();
     }
@@ -449,6 +460,7 @@ const WebSocketInterview = () => {
   };
 
   const stopConnection = (shouldStopMedia = false) => {
+    transcriptionReadyRef.current = false;
     if (mediaRecorderRef.current?.state === 'recording') {
       mediaRecorderRef.current.stop();
     }

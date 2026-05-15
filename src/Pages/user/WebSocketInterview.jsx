@@ -248,6 +248,23 @@ const WebSocketInterview = () => {
         updateStatus('connected');
       });
 
+      socketRef.current.on('streammetrics', (data) => {
+        if (data?.qindex !== undefined && answerContainerRef.current) {
+          const answerType = String(data.answerType || '').toLowerCase();
+          const targetName = answerType.includes('short') ? 'shortanswer' : answerType.includes('long') ? 'longanswer' : answerType;
+          const answerdiv = answerContainerRef.current.querySelector(`#q${data.qindex}`);
+          const targetDiv = answerdiv?.querySelector(`div[name="${targetName}"]`);
+
+          if (targetDiv) {
+            const thinkTime = data.timeToFirstTokenMs ?? 'N/A';
+            const responseTime = data.totalTokenStreamTimeMs ?? 'N/A';
+            targetDiv.innerHTML += `<div class="stream-metrics">Think Time: ${thinkTime}s | Response Time: ${responseTime}s</div>`;
+          }
+        }
+
+        updateStatus('connected');
+      });
+
       socketRef.current.on('shortanswer', (data) => {
         if (answerContainerRef.current) {
           const answerdiv = answerContainerRef.current.querySelector(`#q${data.qindex}`);
@@ -515,7 +532,7 @@ const WebSocketInterview = () => {
       }
       if (socketRef.current?.connected) {
         const socketId = socketRef.current.id;
-        socketRef.current.emit("sendPrompt", { prompt: question, clientEmail: clientEmail, socketId: socketId});
+        socketRef.current.emit("sendPrompt", { prompt: question, clientEmail: clientEmail, socketId: socketId });
         if (questionBoxRef.current) questionBoxRef.current.value = '';
         setStatusMessage('Question sent');
         setStatusIcon(`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#007bff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 12 15 15 9"/></svg>`);

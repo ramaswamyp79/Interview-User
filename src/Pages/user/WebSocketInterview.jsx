@@ -40,6 +40,22 @@ const WebSocketInterview = () => {
   const tagType = useRef({});
 
   const maxSilenceDuration = 5 * 60 * 1000; // 5 minutes
+  const emailStorageKey = 'interview_email';
+
+  const saveInterviewEmail = (value) => {
+    const normalizedEmail = value?.trim();
+    if (!normalizedEmail) return null;
+
+    localStorage.setItem(emailStorageKey, normalizedEmail);
+    sessionStorage.setItem(emailStorageKey, normalizedEmail);
+    setEmail(normalizedEmail);
+    return normalizedEmail;
+  };
+
+  const getInterviewEmail = () => {
+    const storedEmail = localStorage.getItem(emailStorageKey) || sessionStorage.getItem(emailStorageKey);
+    return saveInterviewEmail(storedEmail);
+  };
 
   const formatTime = (seconds) => {
     const hours = Math.floor(seconds / 3600);
@@ -105,14 +121,17 @@ const WebSocketInterview = () => {
     updateStatus('connecting');
     try {
 
-      // Always get email from sessionStorage if available
-      let currentEmail = sessionStorage.getItem('interview_email');
+      // Prefer localStorage so reconnects still have the email after session expiry.
+      let currentEmail = getInterviewEmail();
+      if (!currentEmail) {
+        currentEmail = saveInterviewEmail(prompt("Please Confirm Your Email Address"));
+      }
+      if (!currentEmail) {
+        throw new Error("Email is required to start transcription.");
+      }
+
       // Only request media if a stream doesn't already exist
       if (!localMediaStreamRef.current) {
-        if (!currentEmail) {
-          currentEmail = prompt("Please Confirm Your Email Address");
-          setEmail(currentEmail);
-        }
         localMediaStreamRef.current = await navigator.mediaDevices.getDisplayMedia({
           video: { width: { ideal: 640 }, height: { ideal: 360 } },
           audio: true
@@ -489,10 +508,14 @@ const WebSocketInterview = () => {
   const handleSendQuestion = async () => {
     try {
       const question = questionBoxRef.current?.value.trim();
-      const clientEmail = sessionStorage.getItem('interview_email');
+      const clientEmail = getInterviewEmail() || saveInterviewEmail(prompt("Please Confirm Your Email Address"));
+      if (!clientEmail) {
+        setStatusMessage('Email is required to send question');
+        return;
+      }
       if (socketRef.current?.connected) {
         const socketId = socketRef.current.id;
-        socketRef.current.emit("sendPrompt", { prompt: question, clientEmail: clientEmail, socketId: socketId });
+        socketRef.current.emit("sendPrompt", { prompt: question, clientEmail: clientEmail, socketId: socketId});
         if (questionBoxRef.current) questionBoxRef.current.value = '';
         setStatusMessage('Question sent');
         setStatusIcon(`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#007bff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 12 15 15 9"/></svg>`);

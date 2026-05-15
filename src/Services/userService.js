@@ -28,5 +28,6 @@ export const updateProfile = async (payload) => {
 // Logout
 export const logoutUser = async () => {
   localStorage.removeItem("token");
+  localStorage.removeItem("interview_email");
   sessionStorage.removeItem("interview_email");
 };

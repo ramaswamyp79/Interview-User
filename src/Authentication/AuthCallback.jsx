@@ -27,8 +27,9 @@ const AuthCallback = () => {
       .then((res) => {
         // ✅ IMPORTANT: backend returns data directly
         localStorage.setItem("token", res.token);
-        // Store authenticated email in sessionStorage
+        // Keep email available across reconnects and session refreshes.
         if (user?.email) {
+          localStorage.setItem("interview_email", user.email);
           sessionStorage.setItem("interview_email", user.email);
         }
         navigate("/home", { replace: true });

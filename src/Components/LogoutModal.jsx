@@ -10,6 +10,7 @@ export default function LogoutModal({ close }) {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("interview_email");
     sessionStorage.removeItem("interview_email");
     logout({
       logoutParams: {

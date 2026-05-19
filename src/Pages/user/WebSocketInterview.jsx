@@ -39,6 +39,115 @@ const WebSocketInterview = () => {
   const buffers = useRef({});
   const insideTag = useRef({});
   const tagType = useRef({});
+  const shortAnswerBuffers = useRef({});
+  const shortAnswerInsideTag = useRef({});
+  const shortAnswerTagType = useRef({});
+  const shortAnswerFenceState = useRef({});
+
+  const formatMarkedAnswerText = (message, qindex, stateRefs) => {
+    const key = qindex ?? 'default';
+    let output = '';
+
+    if (stateRefs.buffers.current[key] === undefined)
+      stateRefs.buffers.current[key] = '';
+
+    if (stateRefs.insideTag.current[key] === undefined)
+      stateRefs.insideTag.current[key] = false;
+
+    if (stateRefs.tagType.current[key] === undefined)
+      stateRefs.tagType.current[key] = '';
+
+    for (let i = 0; i < message.length; i++) {
+      const char = message[i];
+
+      // START HEADING
+      if (char === '⟬') {
+        stateRefs.insideTag.current[key] = true;
+        stateRefs.tagType.current[key] = 'heading';
+        stateRefs.buffers.current[key] = '';
+        continue;
+      }
+
+      // START KEYWORD
+      if (char === '⟦') {
+        stateRefs.insideTag.current[key] = true;
+        stateRefs.tagType.current[key] = 'keyword';
+        stateRefs.buffers.current[key] = '';
+        continue;
+      }
+
+      // END HEADING
+      if (char === '⟭' && stateRefs.tagType.current[key] === 'heading') {
+        stateRefs.insideTag.current[key] = false;
+        output += `<b style="color: forestgreen;">${stateRefs.buffers.current[key]}</b>`;
+        stateRefs.buffers.current[key] = '';
+        stateRefs.tagType.current[key] = '';
+        continue;
+      }
+
+      // END KEYWORD
+      if (char === '⟧' && stateRefs.tagType.current[key] === 'keyword') {
+        stateRefs.insideTag.current[key] = false;
+        output += `<b>${stateRefs.buffers.current[key]}</b>`;
+        stateRefs.buffers.current[key] = '';
+        stateRefs.tagType.current[key] = '';
+        continue;
+      }
+
+      // HANDLE BULLET FORMATTING
+      if (!stateRefs.insideTag.current[key] && char === '•') {
+        continue;
+      }
+
+      // BUFFER OR NORMAL TEXT
+      if (stateRefs.insideTag.current[key]) {
+        stateRefs.buffers.current[key] += char;
+      } else {
+        output += char;
+      }
+    }
+
+    return output.replace(/\*\*/g, '');
+  };
+
+  const removeFencedContent = (message, qindex) => {
+    const key = qindex ?? 'default';
+    const state = shortAnswerFenceState.current[key] || { insideFence: false, pendingTicks: 0 };
+    let output = '';
+
+    for (let i = 0; i < message.length; i++) {
+      const char = message[i];
+
+      if (char === '`') {
+        state.pendingTicks += 1;
+        if (state.pendingTicks === 3) {
+          state.insideFence = !state.insideFence;
+          state.pendingTicks = 0;
+        }
+        continue;
+      }
+
+      if (state.pendingTicks > 0) {
+        if (!state.insideFence) {
+          output += '`'.repeat(state.pendingTicks);
+        }
+        state.pendingTicks = 0;
+      }
+
+      if (!state.insideFence) {
+        output += char;
+      }
+    }
+
+    shortAnswerFenceState.current[key] = state;
+    return output;
+  };
+
+  const updateLongAnswerPadding = (longanswerdiv) => {
+    if (!longanswerdiv) return;
+
+    longanswerdiv.style.padding = longanswerdiv.querySelector('.af-code-container') ? '2px' : '10px';
+  };
 
   const maxSilenceDuration = 5 * 60 * 1000; // 5 minutes
   const emailStorageKey = 'interview_email';
@@ -267,7 +376,11 @@ const WebSocketInterview = () => {
           if (targetDiv) {
             const thinkTime = data.timeToFirstTokenMs ?? 'N/A';
             const responseTime = data.totalTokenStreamTimeMs ?? 'N/A';
-            targetDiv.innerHTML += `<div class="stream-metrics">Think Time: ${thinkTime}s | Response Time: ${responseTime}s</div>`;
+            const metricsBreak = answerType === 'longanswer-code' ? '<br>' : '';
+            targetDiv.innerHTML += `<div class="stream-metrics">Think Time: ${thinkTime}s | Response Time: ${responseTime}s</div>${metricsBreak}`;
+            if (targetName === 'longanswer') {
+              updateLongAnswerPadding(targetDiv);
+            }
           }
         }
 
@@ -282,6 +395,14 @@ const WebSocketInterview = () => {
             if (shortanswerdiv) {
               let msg = data.message;
               if (typeof msg === 'string') {
+                if (data.promptchosen === 'CD') {
+                  msg = removeFencedContent(msg, data.qindex);
+                }
+                msg = formatMarkedAnswerText(msg, data.qindex, {
+                  buffers: shortAnswerBuffers,
+                  insideTag: shortAnswerInsideTag,
+                  tagType: shortAnswerTagType
+                });
                 msg = msg.replace(/\|\|/g, '<br><br>');
               }
               shortanswerdiv.innerHTML += msg;
@@ -309,6 +430,24 @@ const WebSocketInterview = () => {
         }
       });
 
+      // Code to detect long answer code event - Non Streaming Mode
+      socketRef.current.on('longanswer-code', (data) => {
+        if (!answerContainerRef.current) return;
+
+        const answerdiv = answerContainerRef.current.querySelector(`#q${data.qindex}`);
+        if (!answerdiv) return;
+
+        const longanswerdiv = answerdiv.querySelector('div[name="longanswer"]');
+        if (!longanswerdiv) return;
+
+        const msg = data.message || '';
+
+        // Full non-streaming response: replace existing long answer content.
+        longanswerdiv.innerHTML = msg;
+        updateLongAnswerPadding(longanswerdiv);
+
+        updateStatus('connected');
+      });
 
 
       socketRef.current.on('longanswer', (data) => {
@@ -389,6 +528,7 @@ const WebSocketInterview = () => {
               }
 
               longanswerdiv.innerHTML += output;
+              updateLongAnswerPadding(longanswerdiv);
             }
           }
         }
@@ -398,12 +538,19 @@ const WebSocketInterview = () => {
 
       socketRef.current.on('transcriptionError', (error) => {
         console.error('Transcription error from server:', error);
-        setStatusMessage('Transcription error: ' + error);
-        setStatusIcon(`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#dc3545" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>`);
-        updateStatus('disconnected');
-        stopTimer();
-        if (startButtonRef.current) startButtonRef.current.disabled = false;
-        if (stopButtonRef.current) stopButtonRef.current.disabled = true;
+
+        transcriptionReadyRef.current = false;
+
+        if (mediaRecorderRef.current?.state === 'recording') {
+          mediaRecorderRef.current.stop();
+        }
+
+        setStatusMessage('Transcription stream failed. Reconnecting...');
+        updateStatus('connecting');
+
+        setTimeout(() => {
+          restartTranscription();
+        }, 1000);
       });
 
       socketRef.current.on('disconnect', () => {
@@ -522,6 +669,10 @@ const WebSocketInterview = () => {
       if (answerContainerRef.current) {
         answerContainerRef.current.innerHTML = "";
       }
+      shortAnswerFenceState.current = {};
+      shortAnswerBuffers.current = {};
+      shortAnswerInsideTag.current = {};
+      shortAnswerTagType.current = {};
       setStatusMessage('Answers cleared');
       setStatusIcon(`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#17a2b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 12 15 15 9"/></svg>`);
     } catch (error) {

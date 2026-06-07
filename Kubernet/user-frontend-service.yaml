@@ -2,19 +2,12 @@ apiVersion: v1
 kind: Service
 metadata:
   name: user-frontend-service
+  annotations:
+    cloud.google.com/backend-config: '{"default": "frontend-backendconfig"}'
 spec:
   selector:
     app: user-frontend
   ports:
     - port: 80
       targetPort: 80
-      name: http
-    # OPTIONAL: conversational websocket port (remove if not needed)
-    - port: 3000
-      targetPort: 3000
-      name: websocket
   type: ClusterIP
-  sessionAffinity: ClientIP
-  sessionAffinityConfig:
-    clientIP:
-      timeoutSeconds: 10800  # 3 hours

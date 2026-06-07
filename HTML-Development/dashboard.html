@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AnswerFlow AI | Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+
+<!-- Mobile overlay -->
+<div class="mobile-overlay" id="mobileOverlay" onclick="closeMobileSidebar()"></div>
+
+
+
+<!-- ═══════════════════ SIDEBAR ═══════════════════ -->
+
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <img src="images/logo_AnsweflowAI.jpg.png" alt="">
+    </div>
+    <span class="logo-text hide-collapsed">AnswerFlow<span>AI</span></span>
+    <button class="collapse-btn" id="collapseBtn">
+      <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 5L8 10l5 5"/></svg>
+    </button>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-item active" data-page="home" data-tooltip="Home">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10L10 3l7 7M5 8.5V17h4v-4h2v4h4V8.5"/></svg>
+      <span class="hide-collapsed">Home</span>
+    </div>
+    <div class="nav-item" data-page="sessions" data-tooltip="Interview Sessions">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="14" height="14" rx="2"/><path d="M7 8h6M7 12h4"/></svg>
+      <span class="hide-collapsed">Interview Sessions</span>
+    </div>
+    <div class="nav-item" data-page="live" data-tooltip="Live Interview">
+<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="2"/>
+          <path d="M6.34 17.66a8 8 0 010-11.31"/>
+          <path d="M17.66 17.66a8 8 0 000-11.31"/>
+          <path d="M3.51 20.49a13 13 0 010-16.97"/>
+          <path d="M20.49 20.49a13 13 0 000-16.97"/>
+        </svg>      <span class="hide-collapsed"><a href="answerflow-live-interview.html" style="text-decoration: none;color: #7a9aaa;">Live Interview</a></span>
+    </div>
+    <div class="nav-item" data-page="mock" data-tooltip="Mock Interview">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="14" height="14" rx="2"/><path d="M7 10l2 2 4-4"/></svg>
+      <span class="hide-collapsed">Mock Interview</span>
+    </div>
+    <div class="nav-item" data-page="resume" data-tooltip="CV / Resume">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="12" height="15" rx="2"/><path d="M7 7h6M7 10h6M7 13h4"/></svg>
+      <span class="hide-collapsed">CV / Resume</span>
+    </div>
+    <div class="sidebar-divider"></div>
+    <div class="nav-item" data-page="download" data-tooltip="Download App">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14V4M6 10l4 4 4-4"/><path d="M3 16v1a1 1 0 001 1h12a1 1 0 001-1v-1"/></svg>
+      <span class="hide-collapsed">Download Desktop App</span>
+    </div>
+    <div class="nav-item" data-page="support" data-tooltip="Email Support">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V5z"/><path d="M3 8l7 5 7-5"/></svg>
+      <span class="hide-collapsed">Email Support</span>
+    </div>
+  </nav>
+
+  <div class="credit-card" id="creditCard">
+    <div class="credit-card-label">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="16" height="11" rx="2"/><path d="M2 9h16"/></svg>
+      Interview Credit
+    </div>
+    <div class="credit-count">15 interview credits</div>
+    <button class="btn-get-credit" onclick="navigate('credits')">Get Credit</button>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="profile-row" onclick="window.location.href='profile.html'" style="cursor:pointer">
+      <div class="avatar"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="7" r="3"/><path d="M4 17c0-3.314 2.686-6 6-6s6 2.686 6 6"/></svg></div>
+      <div class="profile-info hide-collapsed">
+        <div class="profile-name">Prabhu Ramasamy</div>
+        <div class="profile-sub">View Profile</div>
+      </div>
+    </div>
+    <div class="logout-row">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 10H3M3 10l3-3M3 10l3 3"/><path d="M9 6V4a1 1 0 011-1h6a1 1 0 011 1v12a1 1 0 01-1 1h-6a1 1 0 01-1-1v-2"/></svg>
+      <span class="hide-collapsed" style="white-space:nowrap">Logout</span>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══════════════════ MAIN ═══════════════════ -->
+<main class="main" id="main">
+  
+
+  <!-- ╔══════════════ PAGE: HOME ══════════════╗ -->
+
+
+  <div class="page active" id="page-home">
+    <header class="topbar">
+      <button class="hamburger" onclick="openMobileSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="topbar-title">Dashboard</div>
+      <div class="topbar-actions">
+        <div class="theme-toggle">Dark Mode</div>
+        <button class="btn-outline">Start Trial</button>
+        <button class="btn-dark" onclick="openCreateSession()">Start Session</button>
+
+        
+      </div>
+    </header>
+    <div class="content">
+      <div class="hero">
+        <div class="hero-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 72 72" fill="none">
+            <path d="M36 6C39.3 6 42 8.7 42 12C42 15.3 39.3 18 36 18C32.7 18 30 15.3 30 12C30 8.7 32.7 6 36 6ZM47.7 24.3C46.5 23.1 44.4 21 40.5 21H33C24.6 21 18 14.4 18 6H12C12 15.6 18.3 23.4 27 26.1V66H33V48C33 48 36.7771 47.259 39 48V66H45V30.3L57 42L61.2 37.8L47.7 24.3Z" fill="url(#g1)"/>
+            <defs><linearGradient id="g1" x1="36.6" y1="6" x2="36.6" y2="66" gradientUnits="userSpaceOnUse"><stop stop-color="#0FB380"/><stop offset="1" stop-color="#2783AE"/></linearGradient></defs>
+          </svg>
+        </div>
+        <h1 class="hero-title">Morning, Prabhu Ramasamy</h1>
+      </div>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-badge badge-optional">Optional &nbsp; Resume</div>
+          <div class="step-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+          <p class="step-desc">Upload your resume to generate custom answers for job interview questions.</p>
+          <button class="btn-step" onclick="navigate('resume')">Upload Resume</button>
+        </div>
+        <div class="step-card">
+          <div class="step-badge badge-step">Step 1 &nbsp; Trial Session</div>
+          <div class="step-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
+          <p class="step-desc">Try a free 10-minute session and see how easy it is to practice interviews.</p>
+          <button class="btn-step" onclick="navigate('mock')">Create Session</button>
+        </div>
+        <div class="step-card">
+          <div class="step-badge badge-step">Step 2 &nbsp; Buy Credits</div>
+          <div class="step-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+          <p class="step-desc">Purchase credits for real interview sessions. No subscription needed!</p>
+          <button class="btn-step" onclick="navigate('credits')">Buy Credits</button>
+        </div>
+        <div class="step-card">
+          <div class="step-badge badge-step">Step 3 &nbsp; Real Interview</div>
+          <div class="step-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l2 2-2 2M9 19l-2-2 2-2"/><circle cx="12" cy="12" r="9"/><line x1="9" y1="12" x2="17" y2="12"/></svg></div>
+          <p class="step-desc">Use your credits for a real mock interview and get your dream job!</p>
+          <button class="btn-step" onclick="navigate('sessions')">Start Interview</button>
+        </div>
+      </div>
+      <div class="section-header">
+        <div class="section-eyebrow">✦ Features</div>
+        <h2 class="section-title">Your AI-Powered Interview Partner</h2>
+        <p class="section-sub">Our platform helps you practice real interview scenarios, improve your confidence, and get job-ready with smart insights.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feat-card">
+          <div class="feat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></div>
+          <div class="feat-title">Realistic AI Questions</div>
+          <p class="feat-desc">Get dynamic, job-specific questions just like real HR & technical rounds.</p>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+          <div class="feat-title">Instant Smart Feedback</div>
+          <p class="feat-desc">Receive insights on structure, tone, clarity, and confidence after every answer.</p>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/></svg></div>
+          <div class="feat-title">Voice-Based Interview Mode</div>
+          <p class="feat-desc">Experience real-time audio interviews with AI for a real interviewer feel.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- ╔══════════════ PAGE: SESSIONS ══════════════╗ -->
+
+
+  <div class="page" id="page-sessions">
+    <header class="topbar">
+      <button class="hamburger" onclick="openMobileSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="topbar-title">Interview Sessions</div>
+      <div class="topbar-actions">
+        <div class="theme-toggle">Dark Mode</div>
+        <button class="btn-outline">Start Trial</button>
+        <button class="btn-teal" onclick="openEditSession()">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:15px;height:15px;margin-right:4px"><path d="M10 4v12M4 10h12"/></svg>
+          Start Session
+        </button>
+      </div>
+    </header>
+    <div class="content">
+      <div class="filter-bar">
+        <div class="search-wrap">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="9" r="5.5"/><path d="M13.5 13.5L17 17"/></svg>
+          <input class="search-input" id="searchInput" type="text" placeholder="Search company or position..." oninput="filterTable()"/>
+        </div>
+        <div class="select-wrap">
+          <select class="filter-select" id="companyFilter" onchange="filterTable()">
+            <option value="">All Companies</option>
+            <option>Zeta Solutions</option><option>CyberNova</option><option>BrightLabs</option>
+            <option>BlueSky Tech</option><option>Nova Labs</option><option>CodeFlow Digital</option>
+            <option>Axiom Corp</option><option>DataStream</option><option>PixelForge</option><option>CloudBase</option>
+          </select>
+          <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 8l5 5 5-5"/></svg>
+        </div>
+        <div class="select-wrap">
+          <select class="filter-select" id="statusFilter" onchange="filterTable()">
+            <option value="">All</option><option value="active">Active</option><option value="expired">Expired</option>
+          </select>
+          <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 8l5 5 5-5"/></svg>
+        </div>
+        <div class="ml-auto">
+          <button class="sort-btn" onclick="toggleSort()">
+            <span id="sortLabel">Newest</span>
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 8l5 5 5-5"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th class="col-sno">S.No</th>
+              <th>Company</th><th>Position</th><th>Ends In</th><th>Created At</th><th>AI Usage</th><th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+        <div class="table-footer">
+          <div class="showing-text" id="showingText"></div>
+          <div class="pagination" id="pagination"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- ╔══════════════ PAGE: CV / RESUME ══════════════╗ -->
+
+
+  <div class="page" id="page-resume">
+    <header class="topbar">
+      <button class="hamburger" onclick="openMobileSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="topbar-title">CV / Resume</div>
+      <div class="topbar-actions">
+        <div class="theme-toggle">Dark Mode</div>
+        <button class="btn-teal" onclick="openUploadResume()">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:15px;height:15px;margin-right:5px"><path d="M10 13V4M6 8l4-4 4 4"/><path d="M3 14v2a1 1 0 001 1h12a1 1 0 001-1v-2"/></svg>
+          Upload Resume
+        </button>
+      </div>
+    </header>
+    <div class="content">
+      <div class="filter-bar">
+        <div class="search-wrap">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="9" r="5.5"/><path d="M13.5 13.5L17 17"/></svg>
+          <input class="search-input" id="resumeSearchInput" type="text" placeholder="Search resumes..." oninput="filterResumes()"/>
+        </div>
+        <button class="btn-outline" onclick="clearResumeSearch()">Clear</button>
+        <div class="ml-auto">
+          <button class="sort-btn" onclick="toggleResumeSort()">
+            <span id="resumeSortLabel">Newest</span>
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 8l5 5 5-5"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:44px;padding-left:16px"><input type="checkbox" id="resumeSelectAll" onchange="toggleSelectAllResumes(this)" style="cursor:pointer"/></th>
+              <th class="col-sno">S.No</th>
+              <th>Title</th>
+              <th>Created At</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="resumeTableBody"></tbody>
+        </table>
+        <div class="table-footer">
+          <div class="showing-text" id="resumeShowingText"></div>
+          <div class="pagination" id="resumePagination"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+ 
+ 
+  <!-- ╔══════════════ PAGE: DOWNLOAD ══════════════╗ -->
+  <div class="page" id="page-download">
+    <header class="topbar">
+      <button class="hamburger" onclick="openMobileSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="topbar-title">Download App</div>
+      <div class="theme-toggle">Dark Mode</div>
+    </header>
+    <div class="content">
+      <div class="dl-hero">
+        <h1 class="dl-title">Download AnswerFlow Desktop App</h1>
+        <p class="dl-sub">Supercharge your interview practice with a clean, fast and offline-ready desktop app.</p>
+        <div class="dl-btn-row">
+          <button class="dl-btn-os" onclick="showToast('Downloading for Windows...')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            Download for Windows
+          </button>
+          <button class="dl-btn-os" onclick="showToast('Downloading for Mac...')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9 12a3 3 0 016 0"/><path d="M12 15v3"/></svg>
+            Download for Mac
+          </button>
+          <button class="dl-btn-os" onclick="showToast('Downloading for Linux...')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+            Download for Linux
+          </button>
+        </div>
+      </div>
+      <div class="dl-features-section">
+        <h2 class="dl-section-title">Powerful Features — Built for You</h2>
+        <div class="dl-features-grid">
+          <div class="dl-feat-card">
+            <div class="dl-feat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+            <div class="dl-feat-title">Blazing Fast Performance</div>
+            <div class="dl-feat-desc">Runs smoothly even on low-end devices.</div>
+          </div>
+          <div class="dl-feat-card">
+            <div class="dl-feat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
+            <div class="dl-feat-title">Smart AI Assistance</div>
+            <div class="dl-feat-desc">Ask AI, get suggestions, improve instantly.</div>
+          </div>
+          <div class="dl-feat-card">
+            <div class="dl-feat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 6l5 5 5-5"/><path d="M5 11V3"/><path d="M15 12h5M18 9v6"/></svg></div>
+            <div class="dl-feat-title">Offline Mode</div>
+            <div class="dl-feat-desc">Practice anytime—even without internet.</div>
+          </div>
+        </div>
+      </div>
+      <div class="dl-steps-section">
+        <h2 class="dl-section-title">Setup in 3 Simple Steps</h2>
+        <div class="dl-steps-grid">
+          <div class="dl-step-card">
+            <div class="dl-step-num">Step 1</div>
+            <div class="dl-step-title">Download</div>
+            <div class="dl-step-desc">Choose your OS and download.</div>
+          </div>
+          <div class="dl-step-card">
+            <div class="dl-step-num">Step 2</div>
+            <div class="dl-step-title">Install</div>
+            <div class="dl-step-desc">Open installer & follow steps.</div>
+          </div>
+          <div class="dl-step-card">
+            <div class="dl-step-num">Step 3</div>
+            <div class="dl-step-title">Start Practicing</div>
+            <div class="dl-step-desc">Launch and begin instantly.</div>
+          </div>
+        </div>
+      </div>
+      <div class="dl-cta-banner">
+        <h2 class="dl-cta-title">Ready to Level Up Your Interview Skills?</h2>
+        <p class="dl-cta-sub">Download the free Desktop App and start your journey.</p>
+        <div class="dl-btn-row">
+          <button class="dl-btn-os dl-btn-white" onclick="showToast('Downloading for Windows...')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            Download for Windows
+          </button>
+          <button class="dl-btn-os dl-btn-white" onclick="showToast('Downloading for Mac...')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9 12a3 3 0 016 0"/><path d="M12 15v3"/></svg>
+            Download for Mac
+          </button>
+          <button class="dl-btn-os dl-btn-white" onclick="showToast('Downloading for Linux...')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+            Download for Linux
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- ╔══════════════ PAGE: BUY CREDITS ══════════════╗ -->
+
+
+  <div class="page" id="page-credits">
+    <header class="topbar">
+      <button class="hamburger" onclick="openMobileSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <div class="topbar-title">Buy Interview Credits</div>
+      <div class="topbar-actions"><div class="theme-toggle">Dark Mode</div><button class="btn-outline">Start Trial</button><button class="btn-dark" onclick="navigate('mock')">Start Session</button></div>
+    </header>
+    <div class="content">
+      <div class="promo-banner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Special offer for <strong>&nbsp;IN India&nbsp;</strong> users! Use code <span class="promo-code">INDA25</span> for 25% off!</div>
+      <div class="pricing-header">
+        <div class="pricing-eyebrow">Pricing</div>
+        <div class="pricing-title">No Subscription</div>
+        <div class="pricing-subtitle"> One-time payment</div>
+        <div class="pricing-badges">
+          <div class="pricing-badge"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 10l4 4 8-8"/></svg>30-Day Money Back</div>
+          <div class="pricing-badge"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 10l4 4 8-8"/></svg>Credits Never Expire</div>
+          <div class="pricing-badge"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 10l4 4 8-8"/></svg>1 Credit = 1 Interview</div>
+        </div>
+      </div>
+      <div class="plans-row">
+        <div class="plan-card"><div class="plan-name">Basic</div><div class="plan-price-row"><span class="plan-price-inr">₹2,450</span><span class="plan-price-usd">$29.50</span></div><div class="plan-credits">3 Interview Credits</div><div class="plan-meta">3 credits • One-time</div><button class="btn-buy btn-buy-teal" onclick="showToast('Purchasing Basic plan...')">Buy credit →</button></div>
+        <div class="plan-card popular"><div class="popular-badge">Popular</div><div class="plan-name">Plus</div><div class="plan-price-row"><span class="plan-price-inr">₹4,500</span><span class="plan-price-usd">$50.00</span></div><div class="plan-credits">6 Interview Credits</div><div class="plan-meta">6 credits • One-time</div><button class="btn-buy btn-buy-teal" onclick="showToast('Purchasing Plus plan...')">Buy credit →</button></div>
+        <div class="plan-card"><div class="plan-name">Advanced</div><div class="plan-price-row"><span class="plan-price-inr">₹7,950</span><span class="plan-price-usd">$78.50</span></div><div class="plan-credits">6 Interview Credits + 3 Free</div><div class="plan-meta">6 credits • One-time</div><button class="btn-buy btn-buy-teal" onclick="showToast('Purchasing Advanced plan...')">Buy credit →</button></div>
+      </div>
+      <div class="split-info"><strong> You can split credits into 30-minute sessions.</strong><span>Use one credit for a full interview session or split into 2 slots. Each slot is 30 minutes.</span></div>
+      <div class="plans-row">
+        <div class="plan-card"><div class="plan-name">Starter</div><div class="plan-price-row"><span class="plan-price-inr">₹1,450</span><span class="plan-price-usd">$16.00</span></div><div class="plan-credits">1 Interview Credit</div><div class="plan-meta">1 credit • One-time</div><button class="btn-buy btn-buy-teal" onclick="showToast('Purchasing Starter plan...')">Buy Credit →</button></div>
+        <div class="plan-card"><div class="plan-name">Pro</div><div class="plan-price-row"><span class="plan-price-inr">₹10,500</span><span class="plan-price-usd">$121.50</span></div><div class="plan-credits">12 Interview Credits</div><div class="plan-meta">12 credits • One-time</div><button class="btn-buy btn-buy-teal" onclick="showToast('Purchasing Pro plan...')">Buy Credit →</button></div>
+        <div class="plan-card"><div class="plan-name">Enterprise</div><div class="plan-price-row"><span class="plan-price-inr">₹18,500</span><span class="plan-price-usd">$217.00</span></div><div class="plan-credits">20 Interview Credits</div><div class="plan-meta">20 credits • One-time</div><button class="btn-buy btn-buy-outline" onclick="showToast('Redirecting to contact...')">Contact →</button></div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- ╔══════════════ PAGE: EMAIL SUPPORT ══════════════╗ -->
+
+
+  <div class="page" id="page-support">
+    <header class="topbar">
+      <button class="hamburger" onclick="openMobileSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <div class="topbar-title">Email Support</div>
+      <div class="topbar-actions">
+        <div class="theme-toggle">Dark Mode</div><button class="btn-outline">Start Trial</button><button class="btn-dark" onclick="navigate('mock')">Start Session</button></div>
+    </header>
+    <div class="content">
+      <div class="support-layout">
+        <div>
+          <h1 class="support-heading">How Can We Help?</h1>
+          <p class="support-sub">Our support team is here to assist you with interview preparation, technical issues, or account-related questions.</p>
+          <div class="quick-cards">
+            <div class="quick-card" onclick="showToast('Opening FAQ...')"><div class="qc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg></div><div><div class="qc-title">FAQ Interview Prep</div><div class="qc-desc">Common questions & quick help.</div></div></div>
+            <div class="quick-card" onclick="showToast('Opening Getting Started...')"><div class="qc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg></div><div><div class="qc-title">Getting Started</div><div class="qc-desc">Setup your account quickly.</div></div></div>
+            <div class="quick-card" onclick="showToast('Connecting to live chat...')"><div class="qc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div><div><div class="qc-title">Live Chat</div><div class="qc-desc">Quick help during office hours.</div></div></div>
+            <div class="quick-card" onclick="showToast('Opening Email Templates...')"><div class="qc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div><div><div class="qc-title">Email Templates</div><div class="qc-desc">Write professional emails easily.</div></div></div>
+          </div>
+        </div>
+        <div class="form-card">
+          <div class="form-group"><label class="form-label">Your Name</label><input class="form-input" type="text" value="Prabhu R"/></div>
+          <div class="form-group"><label class="form-label">Your Email</label><input class="form-input" type="email" placeholder="you@company.com"/></div>
+          <div class="form-group"><label class="form-label">Subject</label><select class="form-select form-input" id="subjectSel" onchange="onSubjectChange()"><option value="">Choose a topic</option><option>Interview & Scoring</option><option>Account & Billing</option><option>Technical Issue</option><option>Credits & Payments</option><option>General Inquiry</option></select></div>
+          <div class="form-group"><label class="form-label">Message</label><textarea class="form-textarea" placeholder="Tell us about your issue..."></textarea></div>
+          <div class="form-footer"><button class="btn-send" onclick="showToast('Message sent! We\'ll reply within 24 hours.')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Send Message</button><div class="phone-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8a19.79 19.79 0 01-3.07-8.64A2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg>+1 (800) 123-4567</div></div>
+          <div class="form-tip" id="formTip">TIP: Selecting <strong>Interview & Scoring</strong> helps us fetch your latest mock interview results.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- ╔══════════════ PAGE: MOCK INTERVIEW ══════════════╗ -->
+
+
+  <div class="page" id="page-mock" style="flex-direction:column;background:#0f1117;overflow:hidden;height:100vh">
+
+    <!-- TOP BAR -->
+    <header class="mi2-topbar">
+      <div class="mi2-logo">
+        <img src="images/logo_AnsweflowAI.jpg.png" alt="" style="width:28px;height:28px;border-radius:6px;">
+        <span class="mi2-tb-title">AnswerFlow AI</span>
+      </div>
+      <div class="mi2-ai-brand">
+      </div>
+
+      <div class="mi2-tb-right">
+        <div class="mi2-timer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="width:12px;height:12px;color:#525870"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span id="mi2Timer">00<span class="mi2-colon">:</span>01<span class="mi2-colon">:</span>48</span>
+        </div>
+        <div class="mi2-connected">
+          <div class="mi2-pulse-dot"></div>
+          Connected
+        </div>
+        <div class="mi2-icon-btn" title="Microphone">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/></svg>
+        </div>
+        <div class="mi2-icon-btn" title="Screen">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        </div>
+        <div class="mi2-icon-btn" title="Settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
+        </div>
+        <div class="mi2-tb-divider"></div>
+        <button class="mi2-end-btn" onclick="navigate('home')">End Session</button>
+        <button class="mi2-clear-btn" id="mi2ClearBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:12px;height:12px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+          Clear
+        </button>
+      </div>
+    </header>
+
+    <!-- PANELS ROW -->
+    <div class="mi2-panels">
+
+      <!-- ══ LEFT 40% ══ -->
+      <div class="mi2-left">
+
+        <!-- Screen share area -->
+        <div class="mi2-screen-area" id="mi2ScreenArea">
+          <div class="mi2-sharing-pill"><span class="mi2-dot"></span> SHARING</div>
+          <button class="mi2-stop-btn" id="mi2StopBtn">Stop Sharing</button>
+          <div class="mi2-screen-monitor">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#3a3f58" stroke-width="1.5" stroke-linecap="round" style="width:22px;height:22px"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          </div>
+          <div class="mi2-screen-label" id="mi2ScreenLabel">Screen sharing active</div>
+          <div class="mi2-screen-sub" id="mi2ScreenSub">Sharing: meet.google.com</div>
+        </div>
+
+        <!-- Transcript header -->
+        <div class="mi2-transcript-hdr">
+          <div class="mi2-transcript-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="width:12px;height:12px;color:#525870"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            Transcript
+            <div class="mi2-pulse-dot" style="width:7px;height:7px;"></div>
+          </div>
+          <button class="mi2-expand-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:10px;height:10px"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+          </button>
+        </div>
+
+        <!-- Transcript feed -->
+        <div class="mi2-transcript-feed" id="mi2TranscriptFeed">
+
+          <div class="mi2-msg mi2-interviewer">
+            <div class="mi2-msg-meta">
+              <span class="mi2-msg-ts">00:12</span>
+              <span class="mi2-role-tag mi2-role-q">Question</span>
+            </div>
+            <div class="mi2-msg-bubble">Context: Your company has a set of virtual machines running on Google Cloud that need to interact with a critical on-premises database using internal IPs, with requirements for high data transfer rates and low latency. Question: What solution would you propose</div>
+          </div>
+
+          <div class="mi2-msg mi2-you">
+            <div class="mi2-msg-meta">
+              <span class="mi2-msg-ts">00:45</span>
+              <span class="mi2-role-tag mi2-role-a">Answer</span>
+            </div>
+            <div class="mi2-msg-bubble">That's a great question. I would recommend looking at Cloud VPN or Cloud Interconnect depending on the bandwidth and latency requirements..</div>
+          </div>
+
+          
+
+        </div>
+
+        <!-- Query bar -->
+        <div class="mi2-query-bar">
+          <div class="mi2-query-wrap">
+            <input class="mi2-query-input" id="mi2QueryInput" type="text"
+              placeholder="Ask a follow-up question or type your own query...">
+            <button class="mi2-query-btn" id="mi2QueryBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:10px;height:10px"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              Query
+            </button>
+          </div>
+        </div>
+
+      </div><!-- /left -->
+
+      <!-- ══ RIGHT 60% ══ -->
+      <div class="mi2-right">
+
+        <!-- Answers feed -->
+        <div class="mi2-answers-feed" id="mi2AnswersFeed">
+
+          <!-- ─── CARD 1 ─── -->
+          <div class="mi2-answer-card">
+            <div class="mi2-ac-head">
+              <span class="mi2-q-badge">Question Asked</span>
+              <div class="mi2-ac-meta">
+                <span class="mi2-ac-time">00:12</span>
+                <div class="mi2-ac-actions">
+                  <button class="mi2-ac-btn" onclick="showToast('Copied!')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:10px;height:10px"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                  </button>
+                  <button class="mi2-ac-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:10px;height:10px"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="mi2-ac-question">"Virtual machines on GCP connecting to on-premises database with high data transfer and low latency requirements"</div>
+
+            <div class="mi2-ac-body">
+              <div class="mi2-ac-intro">
+                <span class="mi2-hl-teal">GCP VPC network peering</span> enables secure, private connectivity between cloud and on-premises resources. This ensures <span class="mi2-hl-green">low latency</span> and <span class="mi2-hl-blue">high throughput</span> for critical database interactions.
+              </div>
+              <div class="mi2-ac-bullet">
+                <div class="mi2-bullet-dot"></div>
+                <div><span class="mi2-sec-label mi2-sec-teal">Proposed Solution Architecture:</span> The solution would involve establishing a secure and reliable connection between Google Cloud and the on-premises environment. This would be achieved using a Cloud VPN or Cloud Interconnect for robust network connectivity. The virtual machines in Google Cloud would then be configured with appropriate network routes to access the on-premises database via its internal IP addresses.</div>
+              </div>
+              <div class="mi2-ac-bullet">
+                <div class="mi2-bullet-dot"></div>
+                <div><span class="mi2-sec-label mi2-sec-orange">Network Connectivity Options:</span> For high data transfer rates and low latency, Cloud Interconnect would be the preferred option over Cloud VPN, as it offers a dedicated private connection. This minimizes network hops and potential internet congestion, directly addressing the performance requirements.</div>
+              </div>
+            
+            </div>
+
+            <div class="mi2-ac-foot">
+              <div class="mi2-source-tag">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="width:10px;height:10px"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+                Google Cloud Architecture Guide
+              </div>
+              <span class="mi2-conf-badge">94% confidence</span>
+            </div>
+          </div>
+
+          <!-- ─── CARD 2 — analysing ─── -->
+          <div class="mi2-answer-card">
+            <div class="mi2-ac-head">
+              <span class="mi2-q-badge">Question Asked</span>
+              <div class="mi2-ac-meta">
+                <span class="mi2-ac-time">01:32</span>
+                <div class="mi2-ac-actions">
+                  <button class="mi2-ac-btn" onclick="showToast('Copied!')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:10px;height:10px"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                  </button>
+                  <button class="mi2-ac-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:10px;height:10px"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="mi2-ac-analysing">
+              <div class="mi2-typing-dots"><span></span><span></span><span></span></div>
+              Analysing: "why Cloud Interconnect over Cloud VPN" ...
+            </div>
+          </div>
+
+        </div><!-- /answers-feed -->
+
+        <!-- Status bar -->
+        <div class="mi2-status-bar">
+          <div class="mi2-st-items">
+            <div class="mi2-st-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" style="width:10px;height:10px"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/></svg>
+              Audio capture active
+            </div>
+            <div class="mi2-st-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" style="width:10px;height:10px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              GPT-4.1 · English
+            </div>
+          </div>
+          <div class="mi2-all-ok">
+            <div class="mi2-ok-dot"></div>
+            All systems operational
+          </div>
+        </div>
+
+      </div><!-- /right -->
+
+    </div><!-- /panels -->
+  </div>
+
+
+
+  <!-- ╔══════════════ PAGE: LIVE INTERVIEW ══════════════╗ -->
+
+
+ <!-- <div class="page" id="page-live" style="flex-direction:column">
+    <header class="live-topbar">
+      <div class="live-topbar-left">
+        <div class="topbar-back" onclick="navigate('sessions')" style="color:rgba(255,255,255,.7)"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 5L8 10l5 5"/></svg>Dashboard</div>
+        <span class="live-topbar-sep">|</span>
+        <span class="live-topbar-title">AnswerFlow AI</span>
+      </div>
+      <div class="live-topbar-center">
+        <div class="live-timer-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span id="liveTimerNum">00:01:48</span></div>
+        <div class="live-status-dot"><span class="live-dot"></span>Connected</div>
+      </div>
+      <div class="live-topbar-right">
+        <button class="live-topbar-btn" title="Microphone" id="liveMicBtn" onclick="toggleLiveMic()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/></svg></button>
+        <button class="live-topbar-btn" title="Screen share" id="liveShareBtn" onclick="toggleLiveShare()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></button>
+        <button class="live-topbar-btn" title="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg></button>
+        <div class="live-topbar-div"></div>
+        <button class="btn-end-live" onclick="navigate('sessions')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>End Session</button>
+      </div>
+    </header>
+    <div class="live-body">
+      <div class="live-left">
+        <div class="live-share-area" id="liveShareArea">
+          <div class="share-badge" id="shareBadge"><span class="share-badge-dot"></span>SHARING</div>
+          <div class="live-share-inner">
+            <button class="btn-stop-sharing" id="stopSharingBtn" onclick="toggleLiveShare()">Stop Sharing</button>
+            <div class="share-screen-icon"><svg viewBox="0 0 80 60" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="4" width="72" height="48" rx="5"/><path d="M28 56h24M40 52v4"/></svg></div>
+            <div class="share-screen-label">Screen sharing active</div>
+            <div class="share-screen-sub">Sharing: meet.google.com</div>
+          </div>
+        </div>
+        <div class="live-transcript-panel">
+          <div class="transcript-header">
+            <div class="transcript-title"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V5z"/><path d="M3 8l7 4.5L17 8"/></svg>Live Transcript<span class="transcript-live-dot"></span></div>
+            <button class="transcript-expand-btn" onclick="toggleTranscriptExpand()"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8V3h5M17 8V3h-5M3 12v5h5M17 12v5h-5"/></svg></button>
+          </div>
+          <div class="transcript-body" id="transcriptBody">
+            <div class="transcript-entry"><div class="te-meta"><span class="te-time">00:12</span><span class="te-role interviewer">Interviewer</span></div><div class="te-text">Context: Your company has a set of virtual machines running on Google Cloud that need to interact with a critical on-premises database using internal IPs, with requirements for high data transfer rates and low latency. Question: What solution would you propose?</div></div>
+            <div class="transcript-entry"><div class="te-meta"><span class="te-time">00:45</span><span class="te-role you">You</span></div><div class="te-text">That's a great question. I would recommend looking at Cloud VPN or Cloud Interconnect depending on the bandwidth and latency requirements.</div></div>
+            <div class="transcript-entry"><div class="te-meta"><span class="te-time">01:32</span><span class="te-role interviewer">Interviewer</span></div><div class="te-text">Can you elaborate on why Cloud Interconnect would be preferred over Cloud VPN in this scenario?</div></div>
+          </div>
+          <div class="transcript-query-bar">
+            <input class="transcript-query-input" id="transcriptQuery" type="text" placeholder="Ask a follow-up question or type your own query..."/>
+            <button class="btn-query" onclick="sendLiveQuery()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Query</button>
+          </div>
+        </div>
+      </div>
+      <div class="live-right">
+        <div class="ai-engine-header">
+          <div class="ai-engine-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>AI Answer Engine<span class="ai-sparkle">✦</span></div>
+          <div class="ai-engine-sub">Real-time intelligent responses</div>
+          <button class="ai-clear-btn" onclick="clearAIAnswers()"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="14" height="14" rx="2"/><path d="M7 8h6M7 12h4"/></svg>Clear</button>
+        </div>
+        <div class="ai-answers-body" id="aiAnswersBody">
+          <div class="ai-answer-card">
+            <div class="ai-answer-meta"><span class="ai-q-badge">Question Detected</span><span class="ai-q-time">00:12</span><button class="ai-copy-btn" onclick="showToast('Copied!')"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="5" y="5" width="11" height="13" rx="1.5"/><path d="M5 5V3.5A1.5 1.5 0 016.5 2h7A1.5 1.5 0 0115 3.5V5"/></svg></button></div>
+            <div class="ai-q-quote">"Virtual machines on GCP connecting to on-premises database with high data transfer and low latency requirements"</div>
+            <p class="ai-answer-intro"><span class="ai-highlight-teal">GCP VPC network peering</span> enables secure, private connectivity between cloud and on-premises resources. This ensures <span class="ai-highlight-teal">low latency</span> and <span class="ai-highlight-green">high throughput</span> for critical database interactions.</p>
+            <div class="ai-answer-points">
+              <div class="ai-point"><span class="ai-point-title">• Proposed Solution:</span> Establish a secure connection using Cloud VPN or Cloud Interconnect for robust network connectivity with appropriate routes to access on-premises database via internal IPs.</div>
+              <div class="ai-point"><span class="ai-point-title">• Network Connectivity:</span> For high data transfer rates and low latency, Cloud Interconnect is preferred over Cloud VPN as it offers a dedicated private connection, minimizing network hops.</div>
+              <div class="ai-point"><span class="ai-point-title">• Security:</span> Employ encryption for data in transit with network security groups and firewall rules to restrict access to the on-premises database.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>-->
+
+</main>
+
+
+
+<!-- ═══════════════════ MODALS ═══════════════════ -->
+
+
+<!-- CREATE SESSION MODAL -->
+<div class="modal-overlay" id="createSessionModal" onclick="closeModalOutside(event,'createSessionModal')">
+  <div class="modal-box cs-modal-box" role="dialog" aria-modal="true">
+    <button class="modal-close" onclick="closeCreateSession()"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l10 10M15 5L5 15"/></svg></button>
+
+    <!-- Header -->
+    <div class="cs-header">
+      <div class="cs-header-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      </div>
+      <div>
+        <h2 class="cs-title">Create Interview Session</h2>
+        <p class="cs-subtitle" id="csSubtitle">Set up your AI-powered interview in 6 easy steps</p>
+      </div>
+    </div>
+
+    <!-- Step Tabs -->
+    <div class="cs-tabs" id="csTabs">
+      <div class="cs-tab active" data-step="1">
+        <span class="cs-tab-icon">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="14" height="14" rx="2"/><path d="M7 8h6M7 12h4"/></svg>
+          <svg class="cs-check-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 10l4 4 8-8"/></svg>
+        </span>
+        Company
+      </div>
+      <div class="cs-tab" data-step="2">
+        <span class="cs-tab-icon">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          <svg class="cs-check-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 10l4 4 8-8"/></svg>
+        </span>
+        Language & AI
+      </div>
+      <div class="cs-tab" data-step="3">
+        <span class="cs-tab-icon">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="3" width="12" height="15" rx="2"/><path d="M7 7h6M7 10h6M7 13h4"/></svg>
+          <svg class="cs-check-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 10l4 4 8-8"/></svg>
+        </span>
+        Resume
+      </div>
+      <div class="cs-tab" data-step="4">
+        <span class="cs-tab-icon">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V5z"/><path d="M3 8l7 4.5L17 8"/></svg>
+          <svg class="cs-check-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 10l4 4 8-8"/></svg>
+        </span>
+        Transcript
+      </div>
+      <div class="cs-tab" data-step="5">
+        <span class="cs-tab-icon">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><polyline points="10 7 10 10 12.5 12.5"/></svg>
+          <svg class="cs-check-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 10l4 4 8-8"/></svg>
+        </span>
+        Duration
+      </div>
+      <div class="cs-tab" data-step="6">
+        <span class="cs-tab-icon">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M18 13v3a2 2 0 01-2 2H4a2 2 0 01-2-2V7a2 2 0 012-2h3M15 3h4v4M10 11l7-7"/></svg>
+          <svg class="cs-check-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 10l4 4 8-8"/></svg>
+        </span>
+        Connect
+      </div>
+    </div>
+
+    <!-- Step Panels -->
+    <div class="cs-body">
+
+      <!-- STEP 1: Company -->
+      <div class="cs-panel active" id="cs-panel-1">
+        <div class="cs-info-box">
+          <div class="cs-info-title">Company & Role Details</div>
+          <div class="cs-info-desc">Enter the company name and job role so the AI understands the context and provides relevant interview suggestions.</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Company <span class="form-req">*</span></label>
+          <input class="form-input" id="cs-company" type="text" placeholder="e.g. Google, Microsoft, Amazon..."/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Position / Role <span class="form-req">*</span></label>
+          <input class="form-input" id="cs-role" type="text" placeholder="e.g. Senior Software Engineer, Product Manager..."/>
+        </div>
+      </div>
+
+      <!-- STEP 2: Language & AI -->
+      <div class="cs-panel" id="cs-panel-2">
+        <div class="cs-info-box">
+          <div class="cs-info-title">Language & AI Preferences</div>
+          <div class="cs-info-desc">Choose your interview language and AI model for generating answers.</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label cs-label-icon">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><path d="M10 3c0 0-3 3-3 7s3 7 3 7M10 3c0 0 3 3 3 7s-3 7-3 7M3 10h14"/></svg>
+            Language
+          </label>
+          <div class="select-wrap" style="width:100%">
+            <select class="form-input filter-select" id="cs-language">
+              <option value="en">English</option>
+              <option value="hi">Hindi</option>
+              <option value="ta">Tamil</option>
+              <option value="de">German</option>
+              <option value="fr">French</option>
+            </select>
+            <svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 8l5 5 5-5"/></svg>
+          </div>
+        </div>
+        <div class="cs-toggle-row">
+          <div>
+            <div class="toggle-label">Simple English</div>
+            <div class="toggle-sub">AI avoids complex vocabulary</div>
+          </div>
+          <label class="toggle-switch"><input type="checkbox" id="cs-simple-english"/><span class="toggle-slider"></span></label>
+        </div>
+        <div class="form-group">
+          <label class="form-label cs-label-icon">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><path d="M7 10l2 2 4-4"/></svg>
+            AI Model
+          </label>
+          <div class="cs-model-grid">
+            <label class="cs-model-opt selected" id="model-gpt4">
+              <input type="radio" name="cs-ai-model" value="gpt4" checked/>
+              <div class="cs-model-name">GPT-4.1</div>
+              <div class="cs-model-desc">Smarter, detailed</div>
+            </label>
+            <label class="cs-model-opt" id="model-mini">
+              <input type="radio" name="cs-ai-model" value="gpt4mini"/>
+              <div class="cs-model-name">GPT-4.1 Mini</div>
+              <div class="cs-model-desc">Faster, efficient</div>
+            </label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Extra Instructions <span style="color:var(--text-light);font-weight:400">(Optional)</span></label>
+          <textarea class="form-input" id="cs-extra" placeholder="Any specific instructions for the AI..." style="min-height:80px;resize:vertical"></textarea>
+        </div>
+      </div>
+
+      <!-- STEP 3: Resume -->
+      <div class="cs-panel" id="cs-panel-3">
+        <div class="cs-info-box">
+          <div class="cs-info-title">Resume Selection</div>
+          <div class="cs-info-desc">Select an existing resume or upload a new one for the AI to reference.</div>
+        </div>
+        <div class="cs-resume-tabs">
+          <button class="cs-resume-tab active" id="csResTabExist" onclick="csResTab('exist')">Select Existing</button>
+          <button class="cs-resume-tab" id="csResTabUpload" onclick="csResTab('upload')">Upload Resume</button>
+        </div>
+        <!-- Existing Resumes -->
+        <div id="csResExistPanel">
+          <div class="cs-resume-list" id="csResumeList">
+            <div class="cs-resume-item selected" onclick="csSelectResume(this, 'Software_Engineer_Resume_2024.pdf')">
+              <div class="cs-resume-file-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="2" width="12" height="16" rx="2"/><path d="M7 6h6M7 9h6M7 12h4"/></svg></div>
+              <div class="cs-resume-info">
+                <div class="cs-resume-name">Software_Engineer_Resume_2024.pdf</div>
+                <div class="cs-resume-meta">Mar 15, 2026 · 2 pages</div>
+              </div>
+            </div>
+            <div class="cs-resume-item" onclick="csSelectResume(this, 'Full_Stack_Developer_CV.pdf')">
+              <div class="cs-resume-file-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="2" width="12" height="16" rx="2"/><path d="M7 6h6M7 9h6M7 12h4"/></svg></div>
+              <div class="cs-resume-info">
+                <div class="cs-resume-name">Full_Stack_Developer_CV.pdf</div>
+                <div class="cs-resume-meta">Feb 28, 2026 · 3 pages</div>
+              </div>
+            </div>
+            <div class="cs-resume-item" onclick="csSelectResume(this, 'Technical_Lead_Resume.pdf')">
+              <div class="cs-resume-file-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="2" width="12" height="16" rx="2"/><path d="M7 6h6M7 9h6M7 12h4"/></svg></div>
+              <div class="cs-resume-info">
+                <div class="cs-resume-name">Technical_Lead_Resume.pdf</div>
+                <div class="cs-resume-meta">Jan 10, 2026 · 2 pages</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Upload Resume -->
+        <div id="csResUploadPanel" style="display:none">
+          <div class="resume-drop-zone" id="resumeDropZone" onclick="document.getElementById('resumeFileInput').click()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <div class="rdz-title">Drop your resume here</div>
+            <div class="rdz-sub">PDF, DOCX, or TXT · Max 10MB</div>
+            <button class="rdz-btn" type="button">Browse files</button>
+            <input type="file" id="resumeFileInput" accept=".pdf,.docx,.txt" style="display:none" onchange="handleResumeFile(this)"/>
+          </div>
+          <div class="resume-uploaded" id="resumeUploaded" style="display:none">
+            <svg viewBox="0 0 20 20" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round"><path d="M4 10l4 4 8-8"/></svg>
+            <span id="resumeFileName">resume.pdf</span>
+            <button onclick="clearResume()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--text-light)"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l10 10M15 5L5 15"/></svg></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4: Transcript -->
+      <div class="cs-panel" id="cs-panel-4">
+        <div class="cs-info-box">
+          <div class="cs-info-title">AI Interview Transcript & Summary</div>
+          <div class="cs-info-desc">Choose whether to save the transcript and AI summary of your interview.</div>
+        </div>
+        <div class="cs-toggle-row cs-toggle-prominent">
+          <div>
+            <div class="toggle-label">Save Transcript & Summary</div>
+            <div class="toggle-sub">When enabled, your interview transcript and AI analysis will be saved for later review in your dashboard.</div>
+          </div>
+          <label class="toggle-switch"><input type="checkbox" id="cs-transcript" checked/><span class="toggle-slider"></span></label>
+        </div>
+        <div class="cs-legal-notice">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M10 2a8 8 0 100 16A8 8 0 0010 2zM10 6v4M10 14h.01"/></svg>
+          <span><strong>Legal Notice:</strong> Some regions require consent before recording or transcribing conversations. Ensure you comply with applicable laws before enabling this feature.</span>
+        </div>
+      </div>
+
+      <!-- STEP 5: Duration -->
+      <div class="cs-panel" id="cs-panel-5">
+        <div class="cs-info-box">
+          <div class="cs-info-title">Session Duration</div>
+          <div class="cs-info-desc">Set the interview duration and choose whether it can extend automatically.</div>
+        </div>
+        <div class="form-label cs-label-icon" style="margin-bottom:10px">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><polyline points="10 7 10 10 12.5 12.5"/></svg>
+          Duration (minutes)
+        </div>
+        <div class="cs-dur-grid">
+          <label class="cs-dur-opt" id="csDur15"><input type="radio" name="cs-duration" value="15"/>15 min</label>
+          <label class="cs-dur-opt" id="csDur30"><input type="radio" name="cs-duration" value="30"/>30 min</label>
+          <label class="cs-dur-opt selected" id="csDur45"><input type="radio" name="cs-duration" value="45" checked/>45 min</label>
+          <label class="cs-dur-opt" id="csDur60"><input type="radio" name="cs-duration" value="60"/>60 min</label>
+        </div>
+        <div class="cs-toggle-row" style="margin-top:16px">
+          <div>
+            <div class="toggle-label">Auto Extend Session</div>
+            <div class="toggle-sub">Automatically extend if interview is still active</div>
+          </div>
+          <label class="toggle-switch"><input type="checkbox" id="cs-auto-extend"/><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+
+      <!-- STEP 6: Connect -->
+      <div class="cs-panel" id="cs-panel-6">
+        <div class="cs-info-box">
+          <div class="cs-info-title">Connect & Start</div>
+          <div class="cs-info-desc">Review your setup and choose how you want to connect your interview session.</div>
+        </div>
+        <!-- Summary Grid -->
+        <div class="cs-summary-grid">
+          <div class="cs-summary-item">
+            <div class="cs-summary-label">COMPANY</div>
+            <div class="cs-summary-val" id="sumCompany">—</div>
+          </div>
+          <div class="cs-summary-item">
+            <div class="cs-summary-label">POSITION</div>
+            <div class="cs-summary-val" id="sumPosition">—</div>
+          </div>
+          <div class="cs-summary-item">
+            <div class="cs-summary-label">LANGUAGE</div>
+            <div class="cs-summary-val" id="sumLanguage">English</div>
+          </div>
+          <div class="cs-summary-item">
+            <div class="cs-summary-label">AI MODEL</div>
+            <div class="cs-summary-val" id="sumModel">GPT-4.1</div>
+          </div>
+          <div class="cs-summary-item">
+            <div class="cs-summary-label">DURATION</div>
+            <div class="cs-summary-val" id="sumDuration">45 minutes</div>
+          </div>
+          <div class="cs-summary-item">
+            <div class="cs-summary-label">TRANSCRIPT</div>
+            <div class="cs-summary-val" id="sumTranscript">Enabled</div>
+          </div>
+        </div>
+        <!-- Connection Method -->
+        <div class="form-label" style="margin-bottom:10px">Connection Method</div>
+        <div class="cs-connect-grid">
+          <div class="cs-connect-opt selected" id="csConnTab" onclick="csSelectConn(this)">
+            <div class="cs-connect-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            </div>
+            <div>
+              <div class="cs-connect-title">Share Tab Audio</div>
+              <div class="cs-connect-sub">Browser-based</div>
+            </div>
+          </div>
+          <div class="cs-connect-opt" id="csMicOpt" onclick="csSelectConn(this)">
+            <div class="cs-connect-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/></svg>
+            </div>
+            <div>
+              <div class="cs-connect-title">Microphone</div>
+              <div class="cs-connect-sub">Direct audio input</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /cs-body -->
+
+    <!-- Footer -->
+    <div class="cs-footer">
+      <div class="cs-credits">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        You have <strong id="csCreditsVal">87</strong> interview credits
+      </div>
+      <div class="cs-footer-btns">
+        <button class="btn-outline cs-prev-btn" id="csPrevBtn" onclick="csGoStep(-1)" style="display:none;align-items:center;gap:5px">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px"><path d="M13 5L8 10l5 5"/></svg>
+          Prev
+        </button>
+        <button class="btn-teal" id="csNextBtn" onclick="csGoStep(1)" style="gap:6px">
+          Next
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px"><path d="M7 5l5 5-5 5"/></svg>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+
+<!-- VIEW SESSION MODAL -->
+<div class="modal-overlay" id="viewSessionModal" onclick="closeModalOutside(event,'viewSessionModal')">
+  <div class="modal-box vs-modal-box" role="dialog" aria-modal="true">
+    <button class="modal-close" onclick="closeViewSession()"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l10 10M15 5L5 15"/></svg></button>
+    <!-- Header -->
+    <div class="vs-header">
+      <div class="vs-title-row">
+        <div>
+          <h2 class="vs-company" id="vsCompany">Zeta Solutions</h2>
+          <p class="vs-position" id="vsPosition">Frontend Engineer</p>
+        </div>
+        <span class="badge badge-active" id="vsStatusBadge"><span></span>Active</span>
+      </div>
+    </div>
+    <!-- Info Grid -->
+    <div class="vs-info-grid">
+      <div class="vs-info-cell">
+        <div class="vs-info-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8l-2 4h12l-2-4z"/></svg></div>
+        <div class="vs-info-label">Company</div>
+        <div class="vs-info-val" id="vsCompanyVal">Zeta Solutions</div>
+      </div>
+      <div class="vs-info-cell">
+        <div class="vs-info-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8l-2 4h12l-2-4z"/></svg></div>
+        <div class="vs-info-label">Position</div>
+        <div class="vs-info-val" id="vsPositionVal">Frontend Engineer</div>
+      </div>
+      <div class="vs-info-cell">
+        <div class="vs-info-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg></div>
+        <div class="vs-info-label">AI Model</div>
+        <div class="vs-info-val">GPT-4.1</div>
+      </div>
+      <div class="vs-info-cell">
+        <div class="vs-info-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg></div>
+        <div class="vs-info-label">Language</div>
+        <div class="vs-info-val">English</div>
+      </div>
+      <div class="vs-info-cell">
+        <div class="vs-info-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/></svg></div>
+        <div class="vs-info-label">Share Audio</div>
+        <div class="vs-info-val">Disabled</div>
+      </div>
+      <div class="vs-info-cell">
+        <div class="vs-info-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <div class="vs-info-label">Auto Extend</div>
+        <div class="vs-info-val">Enabled</div>
+      </div>
+    </div>
+    <!-- Job Description -->
+    <div class="vs-jd-section">
+      <div class="vs-jd-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h5"/></svg>
+        Job Description
+      </div>
+      <p class="vs-jd-text" id="vsJobDesc">We are looking for a Frontend Engineer to join our team at Zeta Solutions.</p>
+    </div>
+    <!-- Stats Row -->
+    <div class="vs-stats-row">
+      <div class="vs-stat-box">
+        <div class="vs-stat-label">Credits Left</div>
+        <div class="vs-stat-val" id="vsCreditsLeft">3</div>
+      </div>
+      <div class="vs-stat-box">
+        <div class="vs-stat-label">AI Usage</div>
+        <div class="vs-stat-val teal" id="vsAIUsage">12</div>
+      </div>
+      <div class="vs-stat-box">
+        <div class="vs-stat-label">Created</div>
+        <div class="vs-stat-val teal" id="vsCreatedAt">Nov 18, 2025</div>
+      </div>
+    </div>
+    <!-- Footer -->
+    <div class="vs-footer">
+      <button class="btn-outline" onclick="closeViewSession()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT SESSION MODAL -->
+
+
+<div class="modal-overlay" id="editSessionModal" onclick="closeModalOutside(event,'editSessionModal')">
+  <div class="modal-box edit-modal-box" role="dialog" aria-modal="true">
+    <button class="modal-close" onclick="closeEditSession()"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l10 10M15 5L5 15"/></svg></button>
+    <div class="modal-header">
+      <div class="modal-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></div>
+      <div><h2 class="modal-title">Edit Session</h2><p class="modal-sub" id="editStepLabel">Update interview details and preferences. Step 1 of 4</p></div>
+    </div>
+    <div class="edit-tabs" id="editTabs">
+      <div class="edit-tab active" data-estep="1"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="14" height="14" rx="2"/><path d="M7 8h6M7 12h4"/></svg>Company</div>
+      <div class="edit-tab" data-estep="2"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Language & AI</div>
+      <div class="edit-tab" data-estep="3"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="3" width="12" height="15" rx="2"/><path d="M7 7h6M7 10h6M7 13h4"/></svg>Resume</div>
+      <div class="edit-tab" data-estep="4"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><polyline points="10 7 10 10 12.5 12.5"/></svg>Duration</div>
+    </div>
+    <div class="edit-body" id="editBody">
+      <!-- filled by JS -->
+    </div>
+    <div class="edit-footer">
+      <button class="btn-outline" id="editPrevBtn" onclick="editGoStep(-1)" style="display:none;align-items:center;gap:5px"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px"><path d="M13 5L8 10l5 5"/></svg>Prev</button>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <button class="btn-outline" onclick="closeEditSession()">Cancel</button>
+        <button class="btn-teal" id="editNextBtn" onclick="editGoStep(1)" style="gap:6px">Next <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px"><path d="M7 5l5 5-5 5"/></svg></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE CONFIRM MODAL -->
+<div class="modal-overlay" id="deleteConfirmModal" onclick="closeModalOutside(event,'deleteConfirmModal')">
+  <div class="modal-box del-modal-box" role="dialog" aria-modal="true">
+    <button class="modal-close" onclick="closeDeleteConfirm()"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l10 10M15 5L5 15"/></svg></button>
+    <div class="del-modal-body">
+      <div class="del-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01"/></svg>
+      </div>
+      <div class="del-title">Delete Resume</div>
+      <div class="del-desc">Are you sure you want to delete <strong id="deleteItemName">"Frontend Engineer CV"</strong>? This action cannot be undone.</div>
+      <div class="del-btn-row">
+        <button class="btn-cancel" onclick="closeDeleteConfirm()">Cancel</button>
+        <button class="btn-confirm-del" onclick="confirmDelete()">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RESUME UPLOAD PROCESS MODAL -->
+<div class="modal-overlay" id="resumeUploadModal" onclick="closeModalOutside(event,'resumeUploadModal')">
+  <div class="modal-box upload-modal-box" role="dialog" aria-modal="true">
+    <button class="modal-close" onclick="closeUploadModal()"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l10 10M15 5L5 15"/></svg></button>
+    <div class="upload-modal-body">
+      <div class="upload-check-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+      <div class="upload-title">Resume Processed!</div>
+      <div class="upload-sub">Your resume has been analyzed and saved successfully.</div>
+      <div class="upload-steps-list">
+        <div class="upload-step-item"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 10l4 4 8-8"/></svg>Uploading resume...</div>
+        <div class="upload-step-item"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 10l4 4 8-8"/></svg>Extracting content...</div>
+        <div class="upload-step-item"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 10l4 4 8-8"/></svg>Analyzing skills with AI...</div>
+        <div class="upload-step-item"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 10l4 4 8-8"/></svg>Generating structured data...</div>
+        <div class="upload-step-item" style="opacity:.6"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 10l4 4 8-8"/></svg>Saving resume securely...</div>
+      </div>
+      <div class="upload-progress-bar"><div class="upload-progress-inner" id="uploadProgressInner"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- RESUME VIEW MODAL -->
+<div class="modal-overlay" id="resumeViewModal" onclick="closeModalOutside(event,'resumeViewModal')">
+  <div class="modal-box resume-view-box" role="dialog" aria-modal="true">
+    <button class="modal-close" onclick="closeResumeView()"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l10 10M15 5L5 15"/></svg></button>
+    <div class="resume-view-header">
+      <div class="resume-view-file-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+      <div>
+        <div class="resume-view-name" id="resumeViewTitle">Frontend Engineer CV</div>
+        <div class="resume-view-meta">
+          <span><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="14" height="14" rx="2"/><path d="M7 2v4M13 2v4M3 9h14"/></svg>Nov 18, 2025</span>
+          <span><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="3" width="12" height="15" rx="2"/><path d="M7 7h6M7 10h6M7 13h4"/></svg>2 pages</span>
+        </div>
+      </div>
+    </div>
+    <div class="resume-preview-area">
+      <div class="resume-preview-doc">
+        <h2>John Anderson</h2>
+        <div class="rp-role">Senior Software Engineer</div>
+        <div class="rp-contact"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="f3999c9b9ddd929d979681809c9db3969e929a9fdd909c9e">[email&#160;protected]</a> · +1 (555) 123-4567 · San Francisco, CA</div>
+        <div class="rp-section-block"><div class="rp-section-label">Professional Summary</div><p>Results-driven software engineer with 8+ years of experience building scalable web applications. Proficient in React, TypeScript, Node.js, and cloud infrastructure. Led teams of 5-10 engineers delivering products used by millions.</p></div>
+        <div class="rp-section-block"><div class="rp-section-label">Experience</div>
+          <div class="rp-job-row"><div class="rp-job-title">Senior Software Engineer — Google</div><div class="rp-job-date">2021 – Present</div></div>
+          <ul><li>Led frontend architecture for Cloud Console, serving 10M+ users</li><li>Reduced page load time by 40% through code splitting and lazy loading</li><li>Mentored 5 junior engineers and conducted 100+ code reviews</li></ul>
+          <div class="rp-job-row" style="margin-top:10px"><div class="rp-job-title">Software Engineer — Meta</div><div class="rp-job-date">2018 – 2021</div></div>
+          <ul><li>Built real-time messaging features for Instagram Direct</li><li>Improved app performance by 35% through optimization</li></ul>
+        </div>
+        <div class="rp-section-block"><div class="rp-section-label">Skills</div><p>React, TypeScript, Node.js, GraphQL, AWS, Docker, Kubernetes, Python, PostgreSQL, Redis</p></div>
+        <div class="rp-section-block"><div class="rp-section-label">Education</div><div class="rp-job-row"><div class="rp-job-title">B.S. Computer Science — MIT</div><div class="rp-job-date">2014 – 2018</div></div></div>
+      </div>
+    </div>
+    <div class="resume-view-footer">
+      <button class="btn-download" onclick="showToast('Downloading resume...')"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M10 13V4M6 9l4 4 4-4"/><path d="M3 15v1a1 1 0 001 1h12a1 1 0 001-1v-1"/></svg>Download</button>
+      <button class="btn-outline" onclick="closeResumeView()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="js/dashboard.js"></script>
+</body>
+</html>

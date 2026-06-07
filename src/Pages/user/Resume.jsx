@@ -1,300 +1,830 @@
-import React, { useMemo, useState, useEffect } from "react";
-import { Eye, Trash2 } from "lucide-react";
-import ConfirmModal from "../../Components/ConfirmModal";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  AlertTriangle,
+  CalendarDays,
+  ChevronDown,
+  Download,
+  Eye,
+  FileText,
+  Search,
+  Trash2,
+  X,
+} from "lucide-react";
+
+import AILoader from "../../Components/AILoader";
 import ViewModal from "../../Components/ViewModal";
+import {
+  deleteResumeService,
+  getResumesService,
+} from "../../Services/resume.service";
+import { fetchSignedResumeUrl, resolveApiUrl } from "../../utils/apiUrl";
 
-/* ... SAMPLE_DATA and helpers (same as before) ... */
+const PAGE_SIZE = 5;
+const ALL_RESUMES_LIMIT = 1000;
+const RESUMES_ALL_QUERY_KEY = ["resumes", "all"];
 
-const SAMPLE_DATA = [
-  { id: "r1", title: "Frontend Engineer CV", createdAt: "2025-11-18" },
-  { id: "r2", title: "Backend Engineer Resume", createdAt: "2025-10-09" },
-  { id: "r3", title: "Fullstack Resume - Priya", createdAt: "2025-09-26" },
-  { id: "r4", title: "Data Scientist CV", createdAt: "2025-08-03" },
-  { id: "r5", title: "DevOps Resume", createdAt: "2025-07-12" },
-  { id: "r6", title: "Product Manager CV", createdAt: "2025-06-21" },
-  { id: "r7", title: "Intern Resume - Rahul", createdAt: "2025-05-30" },
-  { id: "r8", title: "UX Designer CV", createdAt: "2025-04-15" },
-  { id: "r9", title: "QA Engineer Resume", createdAt: "2025-03-10" },
-  { id: "r10", title: "Technical Writer CV", createdAt: "2025-02-01" },
-];
+function formatDate(dateObj) {
+  if (!dateObj) return "N/A";
 
-const PAGE_SIZE = 6;
-
-function formatDate(dateStr) {
   try {
-    const d = new Date(dateStr);
-    return d.toLocaleDateString(undefined, {
+    const date =
+      typeof dateObj === "object" && dateObj._seconds
+        ? new Date(dateObj._seconds * 1000)
+        : new Date(dateObj);
+
+    return date.toLocaleDateString(undefined, {
       year: "numeric",
       month: "short",
       day: "numeric",
     });
   } catch {
-    return dateStr;
+    return "Invalid Date";
   }
 }
 
+function getTimestampMs(dateObj) {
+  if (!dateObj) return 0;
+
+  try {
+    if (typeof dateObj === "object" && dateObj._seconds) {
+      return dateObj._seconds * 1000;
+    }
+
+    const time = new Date(dateObj).getTime();
+    return Number.isNaN(time) ? 0 : time;
+  } catch {
+    return 0;
+  }
+}
+
+function extractResumeRows(response) {
+  const payload = response?.data || response;
+
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.resumes)) return payload.resumes;
+  if (Array.isArray(payload?.items)) return payload.items;
+
+  return [];
+}
+
+function extractResumeMeta(response, fallbackRowsLength = 0) {
+  const payload = response?.data || response;
+
+  const total =
+    Number(payload?.total) ||
+    Number(payload?.count) ||
+    Number(payload?.totalCount) ||
+    fallbackRowsLength;
+
+  const totalPages =
+    Number(payload?.totalPages) ||
+    Math.ceil(total / ALL_RESUMES_LIMIT) ||
+    1;
+
+  return {
+    total,
+    totalPages,
+  };
+}
+
+function normalizeResume(resume) {
+  const id = (resume?._id || resume?.id || "").toString();
+
+  return {
+    id,
+    title: resume?.title || resume?.fileName || resume?.name || "Untitled Resume",
+    createdAt: resume?.createdAt || resume?.uploadedAt || resume?.updatedAt,
+    resumeUrl: resume?.resumeUrl || resume?.url || "",
+    previewUrl: resume?.previewUrl || "",
+    downloadUrl: resume?.downloadUrl || "",
+    textUrl: resume?.textUrl || "",
+    jsonUrl: resume?.jsonUrl || "",
+    parsedData: resume?.parsedData || resume?.json || null,
+    raw: resume,
+  };
+}
+
+async function fetchAllResumes() {
+  const firstResponse = await getResumesService(1, ALL_RESUMES_LIMIT);
+  const firstRows = extractResumeRows(firstResponse);
+  const meta = extractResumeMeta(firstResponse, firstRows.length);
+
+  let allRows = [...firstRows];
+
+  if (meta.totalPages > 1) {
+    const remainingPages = Array.from(
+      { length: meta.totalPages - 1 },
+      (_, index) => index + 2
+    );
+
+    const remainingResponses = await Promise.all(
+      remainingPages.map((pageNumber) =>
+        getResumesService(pageNumber, ALL_RESUMES_LIMIT).catch(() => null)
+      )
+    );
+
+    remainingResponses.forEach((response) => {
+      allRows = [...allRows, ...extractResumeRows(response)];
+    });
+  }
+
+  const uniqueMap = new Map();
+
+  allRows.forEach((resume) => {
+    const normalized = normalizeResume(resume);
+
+    if (normalized.id) {
+      uniqueMap.set(normalized.id, normalized);
+    }
+  });
+
+  return Array.from(uniqueMap.values());
+}
+
+function ResumeToast({ toast }) {
+  if (!toast?.show) return null;
+
+  return (
+    <div className={`session-toast ${toast.type === "error" ? "error" : ""}`}>
+      <span className="session-toast-icon">
+        {toast.type === "error" ? "✕" : "✓"}
+      </span>
+      <span>{toast.message}</span>
+    </div>
+  );
+}
+
+function Confirm({
+  open,
+  onCancel,
+  onConfirm,
+  title,
+  message,
+  confirmLabel = "Confirm",
+  disabled = false,
+}) {
+  if (!open) return null;
+
+  const handleBackdropClick = () => {
+    if (!disabled) {
+      onCancel();
+    }
+  };
+
+  return (
+    <div
+      className="confirm-modal-overlay"
+      role="presentation"
+      onClick={handleBackdropClick}
+    >
+      <div
+        className="confirm-modal-box"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="resume-confirm-title"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <button
+          type="button"
+          className="confirm-close-btn"
+          onClick={onCancel}
+          disabled={disabled}
+          aria-label="Close confirmation modal"
+        >
+          <X />
+        </button>
+
+        <div className="confirm-modal-body">
+          <div className="confirm-icon-wrap">
+            <AlertTriangle />
+          </div>
+
+          <h3 id="resume-confirm-title" className="confirm-modal-title">
+            {title}
+          </h3>
+
+          <p className="confirm-message">{message}</p>
+
+          <div className="confirm-actions">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="btn-cancel-soft"
+              disabled={disabled}
+            >
+              Cancel
+            </button>
+
+            <button
+              type="button"
+              onClick={onConfirm}
+              className="btn-confirm-danger"
+              disabled={disabled}
+            >
+              {disabled && (
+                <span className="confirm-btn-spinner" aria-hidden="true" />
+              )}
+              {confirmLabel}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
 export default function Resume() {
-  const [data, setData] = useState(SAMPLE_DATA);
-  const [query, setQuery] = useState("");
+  const queryClient = useQueryClient();
+  const toastTimerRef = useRef(null);
+
+  const [searchInput, setSearchInput] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [sortOrder, setSortOrder] = useState("newest");
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState({});
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-
-  // modal state
   const [viewItem, setViewItem] = useState(null);
-  const [confirmConfig, setConfirmConfig] = useState({ open: false, title: "", message: "", onConfirm: null });
+
+  const [confirmConfig, setConfirmConfig] = useState({
+    open: false,
+    title: "",
+    message: "",
+    ids: [],
+  });
+
+  const [toast, setToast] = useState({
+    show: false,
+    message: "",
+    type: "success",
+  });
+
+  const showToast = (message, type = "success") => {
+    if (toastTimerRef.current) {
+      clearTimeout(toastTimerRef.current);
+    }
+
+    setToast({
+      show: true,
+      message,
+      type,
+    });
+
+    toastTimerRef.current = setTimeout(() => {
+      setToast({
+        show: false,
+        message: "",
+        type: "success",
+      });
+    }, 2500);
+  };
 
   useEffect(() => {
-    const onResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
+    return () => {
+      if (toastTimerRef.current) {
+        clearTimeout(toastTimerRef.current);
+      }
+    };
   }, []);
 
-  const isMobile = windowWidth < 768;
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedQuery(searchInput.trim());
+    }, 300);
 
-  // Filter + Sort
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    let list = data.filter((r) => (q ? r.title.toLowerCase().includes(q) : true));
-    list.sort((a, b) => {
-      const ta = new Date(a.createdAt).getTime();
-      const tb = new Date(b.createdAt).getTime();
-      return sortOrder === "newest" ? tb - ta : ta - tb;
-    });
-    return list;
-  }, [data, query, sortOrder]);
-
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+    return () => clearTimeout(handler);
+  }, [searchInput]);
 
   useEffect(() => {
-    if (page > totalPages) setPage(1);
-  }, [filtered, totalPages, page]);
+    setPage(1);
+  }, [debouncedQuery, sortOrder]);
+
+  const {
+    data: allResumes = [],
+    isLoading,
+    isFetching,
+  } = useQuery({
+    queryKey: RESUMES_ALL_QUERY_KEY,
+    queryFn: fetchAllResumes,
+    keepPreviousData: true,
+    placeholderData: (previousData) => previousData,
+    staleTime: 30 * 1000,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
+  });
+
+  const refreshResumes = async () => {
+    const freshResumes = await fetchAllResumes();
+    queryClient.setQueryData(RESUMES_ALL_QUERY_KEY, freshResumes);
+    return freshResumes;
+  };
+
+  const refreshResumesInBackground = () => {
+    refreshResumes().catch((error) => {
+      console.error("Failed to refresh resumes:", error);
+    });
+  };
+
+  useEffect(() => {
+    const handleResumeUpdate = () => {
+      refreshResumesInBackground();
+    };
+
+    window.addEventListener("resume-updated", handleResumeUpdate);
+
+    return () => {
+      window.removeEventListener("resume-updated", handleResumeUpdate);
+    };
+  }, []);
+
+  const filteredRows = useMemo(() => {
+    const query = debouncedQuery.toLowerCase();
+
+    const rows = allResumes.filter((resume) => {
+      const title = resume.title.toLowerCase();
+      return !query || title.includes(query);
+    });
+
+    rows.sort((a, b) => {
+      const firstDate = getTimestampMs(a.createdAt);
+      const secondDate = getTimestampMs(b.createdAt);
+
+      return sortOrder === "newest"
+        ? secondDate - firstDate
+        : firstDate - secondDate;
+    });
+
+    return rows;
+  }, [allResumes, debouncedQuery, sortOrder]);
+
+  const totalRecords = filteredRows.length;
+  const totalPages = Math.max(1, Math.ceil(totalRecords / PAGE_SIZE));
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
 
   const pageItems = useMemo(() => {
     const start = (page - 1) * PAGE_SIZE;
-    return filtered.slice(start, start + PAGE_SIZE);
-  }, [filtered, page]);
+    return filteredRows.slice(start, start + PAGE_SIZE);
+  }, [filteredRows, page]);
 
-  // Selection
-  const toggleSelect = (id) =>
-    setSelected((p) => {
-      const n = { ...p };
-      if (n[id]) delete n[id];
-      else n[id] = true;
-      return n;
-    });
+  const selectedCount = Object.keys(selected).length;
 
-  const isAllSelected = pageItems.length > 0 && pageItems.every((it) => selected[it.id]);
+  const isAllSelected =
+    pageItems.length > 0 && pageItems.every((item) => selected[item.id]);
 
-  const toggleSelectAll = () =>
-    setSelected((prev) => {
-      const next = { ...prev };
-      if (isAllSelected) {
-        pageItems.forEach((it) => delete next[it.id]);
-      } else {
-        pageItems.forEach((it) => (next[it.id] = true));
-      }
-      return next;
-    });
+  const startRecord = totalRecords === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+  const endRecord = Math.min(page * PAGE_SIZE, totalRecords);
 
-  // Actions (now using modals)
-  const openView = (id) => {
-    const item = data.find((d) => d.id === id);
-    setViewItem(item || { id });
+  const clearSearch = () => {
+    setSearchInput("");
+    setDebouncedQuery("");
   };
 
-  const closeView = () => setViewItem(null);
+  const toggleSort = () => {
+    setSortOrder((current) => (current === "newest" ? "oldest" : "newest"));
+  };
 
-// Request delete for a single item
-const requestDelete = (id) => {
-  const item = data.find((d) => d.id === id);
-  setConfirmConfig({
-    open: true,
-    title: "Delete Resume",
-    message: `Are you sure you want to delete "${item?.title || id}"? This action cannot be undone.`,
-    // Use a fresh function closure here
-    onConfirm: () => {
-      setData((d) => d.filter((r) => r.id !== id));
-      setSelected((s) => {
-        const n = { ...s };
-        delete n[id];
-        return n;
+  const toggleSelect = (id) => {
+    setSelected((previous) => {
+      const next = { ...previous };
+
+      if (next[id]) {
+        delete next[id];
+      } else {
+        next[id] = true;
+      }
+
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    setSelected((previous) => {
+      const next = { ...previous };
+
+      if (isAllSelected) {
+        pageItems.forEach((item) => {
+          delete next[item.id];
+        });
+      } else {
+        pageItems.forEach((item) => {
+          next[item.id] = true;
+        });
+      }
+
+      return next;
+    });
+  };
+
+  const closeConfirm = () => {
+    setConfirmConfig({
+      open: false,
+      title: "",
+      message: "",
+      ids: [],
+    });
+  };
+
+  const openView = (row) => {
+    setViewItem(row);
+  };
+
+  const closeView = () => {
+    setViewItem(null);
+  };
+
+  const requestDelete = (row) => {
+    setConfirmConfig({
+      open: true,
+      title: "Delete Resume",
+      message: `Are you sure you want to delete "${row?.title || "this resume"}"? This action cannot be undone.`,
+      ids: [row.id],
+    });
+  };
+
+  const requestDeleteSelected = () => {
+    const ids = Object.keys(selected);
+
+    if (!ids.length) return;
+
+    setConfirmConfig({
+      open: true,
+      title: "Delete Selected Resumes",
+      message: `Are you sure you want to delete ${ids.length} selected resume(s)? This action cannot be undone.`,
+      ids,
+    });
+  };
+
+  const deleteMutation = useMutation({
+    mutationFn: async (ids) => {
+      if (ids.length === 1) {
+        return deleteResumeService(ids[0]);
+      }
+
+      return Promise.all(ids.map((id) => deleteResumeService(id)));
+    },
+
+    onMutate: async (ids) => {
+      await queryClient.cancelQueries({
+        queryKey: RESUMES_ALL_QUERY_KEY,
+        exact: true,
       });
-      setConfirmConfig((c) => ({ ...c, open: false }));
+
+      const previousResumes = queryClient.getQueryData(RESUMES_ALL_QUERY_KEY);
+
+      queryClient.setQueryData(RESUMES_ALL_QUERY_KEY, (oldResumes = []) => {
+        if (!Array.isArray(oldResumes)) return oldResumes;
+
+        return oldResumes.filter((resume) => !ids.includes(resume.id));
+      });
+
+      setSelected((previous) => {
+        const next = { ...previous };
+
+        ids.forEach((id) => {
+          delete next[id];
+        });
+
+        return next;
+      });
+
+      return { previousResumes };
+    },
+
+    onSuccess: (_response, ids) => {
+      showToast(
+        ids.length === 1
+          ? "Resume deleted successfully."
+          : "Selected resumes deleted successfully."
+      );
+      closeConfirm();
+      window.dispatchEvent(new Event("resume-updated"));
+    },
+
+    onError: (error, _ids, context) => {
+      if (context?.previousResumes) {
+        queryClient.setQueryData(
+          RESUMES_ALL_QUERY_KEY,
+          context.previousResumes
+        );
+      }
+
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to delete resume.";
+
+      showToast(message, "error");
+      closeConfirm();
+    },
+
+    onSettled: () => {
+      refreshResumesInBackground();
     },
   });
-};
 
-// Request delete for selected items
-const requestDeleteSelected = () => {
-  const count = Object.keys(selected).length;
-  if (!count) return;
-  setConfirmConfig({
-    open: true,
-    title: "Delete Selected Resumes",
-    message: `Delete ${count} selected resume(s)? This action cannot be undone.`,
-    onConfirm: () => {
-      setData((d) => d.filter((r) => !selected[r.id]));
-      setSelected({});
-      setConfirmConfig((c) => ({ ...c, open: false }));
-    },
-  });
-};
+  const deleting = deleteMutation.isPending || deleteMutation.isLoading;
 
+  const confirmDelete = () => {
+    if (!confirmConfig.ids.length || deleting) return;
 
+    deleteMutation.mutate(confirmConfig.ids);
+  };
+
+  const handleDownload = async (row) => {
+    try {
+      if (!row?.downloadUrl && row?.resumeUrl) {
+        const data = await fetchSignedResumeUrl(row.resumeUrl);
+        if (data.url) {
+          window.open(resolveApiUrl(data.url), "_blank");
+        }
+        return;
+      }
+
+      if (!row?.downloadUrl) {
+        showToast("Download link is not available.", "error");
+        return;
+      }
+
+      const data = await fetchSignedResumeUrl(row.downloadUrl);
+
+      if (data.url) {
+        window.open(resolveApiUrl(data.url), "_blank");
+        return;
+      }
+
+      const blob = await data.response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+
+      anchor.href = url;
+      anchor.download = row.title || "resume";
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Download failed:", error);
+      showToast(error?.message || "Download failed. Please try again.", "error");
+    }
+  };
+
+  const renderPaginationButtons = () => {
+    const buttons = [];
+
+    for (let index = 1; index <= totalPages; index += 1) {
+      buttons.push(
+        <button
+          key={index}
+          type="button"
+          onClick={() => setPage(index)}
+          className={`page-btn ${index === page ? "active" : ""}`}
+          aria-label={`Go to page ${index}`}
+        >
+          {index}
+        </button>
+      );
+    }
+
+    return buttons;
+  };
+
+  if (isLoading && !allResumes.length) {
+    return (
+      <div className="relative flex h-[60vh] items-center justify-center">
+        <AILoader text="Loading Resumes..." />
+      </div>
+    );
+  }
 
   return (
-    <div className="p-2 md:p-4 lg:px-6 lg:h-[500px]">
-      <div className="mb-4 space-y-1">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-2">
-          <div className="flex items-center gap-2 md:w-auto w-full">
+    <>
+      <ResumeToast toast={toast} />
+
+      <div className="content interview-page resume-page">
+        <div className="filter-bar">
+          <div className="search-wrap">
+            <Search className="search-icon" />
+
             <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              type="text"
+              value={searchInput}
+              onChange={(event) => setSearchInput(event.target.value)}
+              className="search-input"
               placeholder="Search resumes..."
-              className="px-4 py-3 rounded-xl glass-card border focus:ring-2 focus:ring-indigo-300 w-full md:w-72 lg:w-96"
             />
-            <button onClick={() => setQuery("")} className="px-3 py-2 rounded-xl glass hover:scale-105 transition">
-              Clear
-            </button>
           </div>
 
-          <div className="flex items-center gap-2 md:w-auto">
-            <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} className="px-3 py-2 rounded-xl glass border">
-              <option value="newest">Newest</option>
-              <option value="oldest">Oldest</option>
-            </select>
+          <button type="button" onClick={clearSearch} className="btn-outline">
+            Clear
+          </button>
+
+          <div className="ml-auto">
+            <button type="button" onClick={toggleSort} className="sort-btn">
+              <span>{sortOrder === "newest" ? "Newest" : "Oldest"}</span>
+              <ChevronDown />
+            </button>
           </div>
         </div>
 
-        {Object.keys(selected).length > 0 && (
-          <div className="flex justify-between items-center p-2 rounded-xl bg-red-50 border border-red-200 mt-2">
-            <span className="text-red-700 font-medium">{Object.keys(selected).length} selected</span>
-            <button onClick={requestDeleteSelected} className="px-2 py-1 bg-red-600 text-white rounded-sm shadow hover:scale-105">
+        {isFetching && allResumes.length > 0 && (
+          <div className="session-refresh-text">Refreshing resumes...</div>
+        )}
+
+        {selectedCount > 0 && (
+          <div className="mb-4 flex flex-col gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-bold text-red-700">
+                {selectedCount} resume{selectedCount > 1 ? "s" : ""} selected
+              </p>
+              <p className="text-xs text-red-500">
+                You can delete all selected resumes at once.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={requestDeleteSelected}
+              className="btn-confirm-danger"
+              disabled={deleting}
+            >
+              <Trash2 className="h-4 w-4" />
               Delete Selected
             </button>
           </div>
         )}
-      </div>
 
-      {/* table container (same markup as you already had) */}
-      <div className="glass-card rounded-xl overflow-hidden">
-        <div className="overflow-y-auto md:hight-[450px]">
-          {!isMobile ? (
-            <>
-              <div className="grid grid-cols-[50px_80px_1fr_180px_120px] bg-white/40 border-b px-4 py-3 text-base font-semibold text-gray-700">
-                <div>
-                  <input type="checkbox" checked={isAllSelected} onChange={toggleSelectAll} className="w-4 h-4" />
-                </div>
-                <div>S.No</div>
-                <div>Title</div>
-                <div>Created At</div>
-                <div className="text-right">Action</div>
-              </div>
+        <div className="table-card">
+          <table className="session-table">
+            <thead>
+              <tr>
+                <th className="w-12">
+                  <input
+                    type="checkbox"
+                    checked={isAllSelected}
+                    onChange={toggleSelectAll}
+                    className="h-4 w-4 cursor-pointer accent-emerald-500"
+                    aria-label="Select all resumes on this page"
+                  />
+                </th>
+                <th className="col-sno">S.No</th>
+                <th>Title</th>
+                <th>Created At</th>
+                <th>Action</th>
+              </tr>
+            </thead>
 
-              {pageItems.map((row, idx) => {
-                const serial = (page - 1) * PAGE_SIZE + idx + 1;
-                const isChecked = selected[row.id];
+            <tbody>
+              {pageItems.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="empty-table-cell">
+                    No resumes found.
+                  </td>
+                </tr>
+              ) : (
+                pageItems.map((row, index) => {
+                  const serial = (page - 1) * PAGE_SIZE + index + 1;
+                  const isChecked = Boolean(selected[row.id]);
 
-                return (
-                  <div
-                    key={row.id}
-                    className={`grid grid-cols-[50px_80px_1fr_180px_120px] px-4 py-3 border-b last:border-b-0 text-sm items-center transition ${
-                      isChecked ? "hover-faint-gradient" : ""
-                    }`}
-                  >
-                    <div>
-                      <input type="checkbox" checked={isChecked} onChange={() => toggleSelect(row.id)} className="w-4 h-4" />
-                    </div>
-                    <div>{serial}</div>
-                    <div className="font-medium">{row.title}</div>
-                    <div>{formatDate(row.createdAt)}</div>
-                    <div className="flex justify-end gap-2">
-                      <button onClick={() => openView(row.id)} className="p-2 glass rounded-lg hover:scale-110">
-                        <Eye size={18} />
-                      </button>
+                  return (
+                    <tr key={row.id} className={isChecked ? "bg-emerald-50/60" : ""}>
+                      <td>
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => toggleSelect(row.id)}
+                          className="h-4 w-4 cursor-pointer accent-emerald-500"
+                          aria-label={`Select ${row.title}`}
+                        />
+                      </td>
 
-                      <button onClick={() => requestDelete(row.id)} className="p-2 bg-red-50 text-red-600 rounded-lg hover:scale-110">
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </>
-          ) : (
-            <div className="p-3 space-y-3">
-              {pageItems.map((row) => {
-                const isChecked = selected[row.id];
-                return (
-                  <div key={row.id} className={`p-4 rounded-xl border shadow-sm flex justify-between items-center ${isChecked ? "hover-faint-gradient" : "bg-white/70"}`}>
-                    <div className="flex items-center gap-3">
-                      <input type="checkbox" checked={isChecked} onChange={() => toggleSelect(row.id)} className="w-5 h-5" />
-                      <div>
-                        <div className="font-semibold">{row.title}</div>
-                        <div className="text-xs text-gray-600">{formatDate(row.createdAt)}</div>
-                      </div>
-                    </div>
+                      <td className="col-sno">{serial}</td>
 
-                    <div className="flex gap-2">
-                      <button onClick={() => openView(row.id)} className="p-2 glass rounded-lg">
-                        <Eye size={16} />
-                      </button>
+                      <td>
+                        <div className="flex min-w-64 items-center gap-3">
+                          <div className="edit-resume-file-icon">
+                            <FileText />
+                          </div>
 
-                      <button onClick={() => requestDelete(row.id)} className="p-2 bg-red-50 text-red-600 rounded-lg">
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
+                          <div className="min-w-0">
+                            <div
+                              className="truncate text-sm font-semibold"
+                              style={{ color: "var(--session-text-dark)" }}
+                            >
+                              {row.title}
+                            </div>
+
+                            <div
+                              className="mt-0.5 text-xs"
+                              style={{ color: "var(--session-text-light)" }}
+                            >
+                              Resume file
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+
+                      <td className="col-date">{formatDate(row.createdAt)}</td>
+
+                      <td>
+                        <div className="action-cell">
+                          <button
+                            type="button"
+                            onClick={() => openView(row)}
+                            className="action-btn"
+                            title="View"
+                            aria-label={`View ${row.title}`}
+                          >
+                            <Eye />
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDownload(row)}
+                            className="action-btn"
+                            title="Download"
+                            aria-label={`Download ${row.title}`}
+                            disabled={!row.downloadUrl && !row.resumeUrl}
+                          >
+                            <Download />
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => requestDelete(row)}
+                            className="action-btn del"
+                            title="Delete"
+                            aria-label={`Delete ${row.title}`}
+                            disabled={deleting}
+                          >
+                            <Trash2 />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+
+          <div className="table-footer">
+            <div className="showing-text">
+              {totalRecords === 0
+                ? "No results"
+                : `Showing ${startRecord}–${endRecord} of ${totalRecords} Resumes`}
             </div>
-          )}
-        </div>
 
-        {/* pagination (keep your existing pagination that you had) */}
-        <div className="border-t px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-3">
-          <span className="text-sm text-gray-600">
-            Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length}
-          </span>
+            <div className="pagination">
+              <button
+                type="button"
+                disabled={page === 1}
+                onClick={() => setPage((current) => Math.max(1, current - 1))}
+                className="page-btn"
+              >
+                Prev
+              </button>
 
-          <div className="flex items-center gap-2">
-            <button disabled={page === 1} onClick={() => setPage(page - 1)} className={`px-3 py-1 rounded-md glass ${page === 1 ? "opacity-50" : "hover:scale-105"}`}>
-              Prev
-            </button>
+              {renderPaginationButtons()}
 
-            {[...Array(totalPages)].map((_, i) => {
-              const num = i + 1;
-              return (
-                <button key={num} onClick={() => setPage(num)} className={`px-3 py-1 rounded-md ${num === page ? "theme-primary" : "glass"}`}>
-                  {num}
-                </button>
-              );
-            })}
-
-            <button disabled={page === totalPages} onClick={() => setPage(page + 1)} className={`px-3 py-1 rounded-md glass ${page === totalPages ? "opacity-50" : "hover:scale-105"}`}>
-              Next
-            </button>
+              <button
+                type="button"
+                disabled={page === totalPages}
+                onClick={() =>
+                  setPage((current) => Math.min(totalPages, current + 1))
+                }
+                className="page-btn"
+              >
+                Next
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* View modal */}
-      <ViewModal open={!!viewItem} item={viewItem} onClose={closeView} />
-<ConfirmModal
-  key={confirmConfig.open ? Date.now() : "confirm"} // forces fresh render
-  open={confirmConfig.open}
-  title={confirmConfig.title}
-  message={confirmConfig.message}
-  onCancel={() => setConfirmConfig((c) => ({ ...c, open: false }))}
-  onConfirm={() => {
-    confirmConfig.onConfirm?.();
-  }}
-  confirmLabel="Delete"
-  cancelLabel="Cancel"
+        <ViewModal
+  key={viewItem?.id || viewItem?._id || "resume-view"}
+  open={Boolean(viewItem)}
+  item={viewItem}
+  onClose={closeView}
+  onDownload={handleDownload}
 />
 
-    </div>
+        <Confirm
+          open={confirmConfig.open}
+          onCancel={closeConfirm}
+          onConfirm={confirmDelete}
+          title={confirmConfig.title}
+          message={confirmConfig.message}
+          confirmLabel={deleting ? "Deleting..." : "Delete"}
+          disabled={deleting}
+        />
+      </div>
+    </>
   );
 }

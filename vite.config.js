@@ -7,15 +7,10 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "http://localhost:3000",
+        //target: "http://localhost:5000",
+        target:"https://interview-backend-10476774711.asia-south1.run.app",
         changeOrigin: true,
         secure: false,
-      },
-      "/socket.io": {
-        target: "http://localhost:3000",
-        changeOrigin: true,
-        secure: false,
-        ws: true,
       },
     },
   },

@@ -1,8 +1,0 @@
-apiVersion: networking.gke.io/v1
-kind: ManagedCertificate
-metadata:
-  name: frontend-cert
-spec:
-  domains:
-    - answerflow-ai.com
-    - www.answerflow-ai.com

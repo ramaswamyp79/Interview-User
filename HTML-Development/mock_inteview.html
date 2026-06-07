@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AnswerFlow AI | Mock Interview</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="css/mock_interview.css">
+<!-- FA kept for topbar/card icon buttons; sidebar uses inline SVG -->
+
+</head>
+<body>
+
+<!-- ════════ SIDEBAR ════════ -->
+
+
+<!-- ════════ MAIN ════════ -->
+<div class="main">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+        <div class="logo"><img src="images/logo_AnsweflowAI.jpg.png" alt="">
+         <span class="tb-title">AnswerFlow AI</span></div>
+
+    <div class="ai-brand">
+          <div class="ai-icon-box"><i class="fa-solid fa-bolt"></i></div>
+          <div>
+            <div class="ai-label-name">
+              AI Answer Engine
+            </div>
+            <div class="ai-label-sub">Real-time intelligent responses</div>
+          </div>
+        </div>
+
+    <div class="tb-right">
+      <div class="tb-timer">
+        <i class="fa-regular fa-clock"></i>
+        <span id="timer">00<span class="timer-colon">:</span>01<span class="timer-colon">:</span>48</span>
+      </div>
+
+      <div class="connected-badge">
+        <div class="pulse-dot"></div>
+        Connected
+      </div>
+
+      <div class="tb-icon-btn" title="Microphone"><i class="fa-solid fa-microphone"></i></div>
+      <div class="tb-icon-btn" title="Screen"><i class="fa-solid fa-display"></i></div>
+      <div class="tb-icon-btn" title="Settings"><i class="fa-solid fa-gear"></i></div>
+
+      <div class="tb-divider"></div>
+
+      <button class="end-btn" id="endBtn">
+         End Session
+      </button>
+       <div class="right-hdr">
+        <button class="clear-btn" id="clearBtn">
+          <i class="fa-regular fa-trash-can"></i> Clear
+        </button>
+      </div>
+    </div>
+   
+  </header>
+
+  <!-- PANELS -->
+  <div class="panels">
+
+    <!-- ══ LEFT 40% ══ -->
+    <div class="left-panel">
+
+      <!-- Screen share area — 200px -->
+      <div class="screen-area" id="screenArea">
+        <div class="sharing-pill"><span class="dot"></span> SHARING</div>
+        <button class="stop-btn" id="stopBtn">Stop Sharing</button>
+
+        <div class="screen-monitor">
+          <i class="fa-regular fa-desktop"></i>
+        </div>
+        <div class="screen-label" id="screenLabel">Screen sharing active</div>
+        <div class="screen-sub" id="screenSub">Sharing: meet.google.com</div>
+      </div>
+
+      <!-- Transcript header -->
+      <div class="transcript-hdr">
+        <div class="transcript-title">
+          <i class="fa-regular fa-comment-lines"></i>
+          Transcript
+          <div class="pulse-dot" style="width:7px;height:7px;"></div>
+        </div>
+        <button class="expand-btn"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></button>
+      </div>
+
+      <!-- Transcript feed -->
+      <div class="transcript-feed" id="transcriptFeed">
+
+        <div class="msg interviewer">
+          <div class="msg-meta">
+            <span class="msg-ts">00:12</span>
+            <span class="role-tag role-interviewer">Question</span>
+          </div>
+          <div class="msg-bubble">Context: Your company has a set of virtual machines running on Google Cloud that need to interact with a critical on-premises database using internal IPs, with requirements for high data transfer rates and low latency. Question: What solution would you propose</div>
+        </div>
+
+        <div class="msg you">
+          <div class="msg-meta">
+            <span class="msg-ts">00:45</span>
+            <span class="role-tag role-you">Answer</span>
+          </div>
+          <div class="msg-bubble">That's a great question. I would recommend looking at Cloud VPN or Cloud Interconnect depending on the bandwidth and latency requirements..</div>
+        </div>
+
+        <div class="msg interviewer">
+          <div class="msg-meta">
+            <span class="msg-ts">01:32</span>
+            <span class="role-tag role-interviewer">Question</span>
+          </div>
+          <div class="msg-bubble">Can you elaborate on why Cloud Interconnect would be preferred over Cloud VPN in this scenario?</div>
+        </div>
+
+      </div>
+
+      <!-- Query bar -->
+      <div class="query-bar">
+        <div class="query-wrap">
+          <input class="query-input" id="queryInput" type="text"
+            placeholder="Ask a follow-up question or type your own query...">
+          <button class="query-btn" id="queryBtn">
+            <i class="fa-solid fa-paper-plane"></i> Query
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /left -->
+
+    <!-- ══ RIGHT 60% ══ -->
+    <div class="right-panel">
+
+      <!-- Right header -->
+      
+
+      <!-- Answers feed -->
+      <div class="answers-feed" id="answersFeed">
+
+        <!-- ─── CARD 1 ─── -->
+        <div class="answer-card">
+          <div class="ac-head">
+            <span class="q-badge">Question Asked</span>
+            <div class="ac-meta">
+              <span class="ac-time">00:12</span>
+              <div class="ac-actions">
+                <button class="ac-btn"><i class="fa-regular fa-copy"></i></button>
+                <button class="ac-btn"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="ac-question">"Virtual machines on GCP connecting to on-premises database with high data transfer and low latency requirements"</div>
+
+          <div class="ac-body">
+
+            <div class="ac-intro">
+              <span class="hl-teal">GCP VPC network peering</span> enables secure, private connectivity between cloud and on-premises resources. This ensures <span class="hl-green">low latency</span> and <span class="hl-blue">high throughput</span> for critical database interactions.
+            </div>
+
+            <div class="ac-bullet">
+              <div class="bullet-dot"></div>
+              <div><span class="sec-label sec-teal">Proposed Solution Architecture:</span> The solution would involve establishing a secure and reliable connection between Google Cloud and the on-premises environment. This would be achieved using a Cloud VPN or Cloud Interconnect for robust network connectivity. The virtual machines in Google Cloud would then be configured with appropriate network routes to access the on-premises database via its internal IP addresses.</div>
+            </div>
+
+            <div class="ac-bullet">
+              <div class="bullet-dot"></div>
+              <div><span class="sec-label sec-orange">Network Connectivity Options:</span> For high data transfer rates and low latency, Cloud Interconnect would be the preferred option over Cloud VPN, as it offers a dedicated private connection. This minimizes network hops and potential internet congestion, directly addressing the performance requirements.</div>
+            </div>
+
+            <div class="ac-bullet">
+              <div class="bullet-dot"></div>
+              <div><span class="sec-label sec-blue">Security Considerations:</span> Security would be a paramount concern, employing encryption for data in transit, even with a private connection. Network security groups and firewall rules would be implemented in Google Cloud to restrict access to the on-premises database.</div>
+            </div>
+
+          </div>
+
+          <div class="ac-foot">
+            <div class="source-tag">
+              <i class="fa-regular fa-book-open"></i>
+              Google Cloud Architecture Guide
+            </div>
+            <span class="conf-badge">94% confidence</span>
+          </div>
+        </div>
+
+        <!-- ─── CARD 2 — analysing ─── -->
+        <div class="answer-card">
+          <div class="ac-head">
+            <span class="q-badge">Question Asked</span>
+            <div class="ac-meta">
+              <span class="ac-time">01:32</span>
+              <div class="ac-actions">
+                <button class="ac-btn"><i class="fa-regular fa-copy"></i></button>
+                <button class="ac-btn"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="ac-analysing">
+            <div class="typing-dots">
+              <span></span><span></span><span></span>
+            </div>
+            Analysing: "why Cloud Interconnect over Cloud VPN" ...
+          </div>
+        </div>
+
+      </div><!-- /answers-feed -->
+
+      <!-- Status bar -->
+      <div class="status-bar">
+        <div class="st-items">
+          <div class="st-item">
+            <i class="fa-solid fa-microphone ic-green"></i>
+            Audio capture active
+          </div>
+          <div class="st-item">
+            <i class="fa-solid fa-wand-magic-sparkles ic-purple"></i>
+            GPT-4.1 · English
+          </div>
+        </div>
+        <div class="all-ok">
+          <div class="dot"></div>
+          All systems operational
+        </div>
+      </div>
+
+    </div><!-- /right -->
+
+  </div><!-- /panels -->
+</div><!-- /main -->
+
+<script src="js/mock_interview.js"></script>
+</body>
+</html>

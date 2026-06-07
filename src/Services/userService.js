@@ -28,6 +28,14 @@ export const updateProfile = async (payload) => {
 // Logout
 export const logoutUser = async () => {
   localStorage.removeItem("token");
-  localStorage.removeItem("interview_email");
-  sessionStorage.removeItem("interview_email");
 };
+
+
+export const getUserCredits = async () => {
+  try {
+    const res = await api.get("/users/credits");
+    return res.data.data.credits;
+  } catch (err) {
+    console.error("Error fetching credits:", err.response?.status, err.response?.data);
+    return 0;
+  } }

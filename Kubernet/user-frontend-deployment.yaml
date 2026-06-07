@@ -14,50 +14,7 @@ spec:
     spec:
       containers:
         - name: user-frontend
-          image: gcr.io/gen-lang-client-0149291660/user-frontend:latest
+          image: gcr.io/interview-ai-482614/user-frontend:REPLACED_BY_CICD
           imagePullPolicy: Always
           ports:
             - containerPort: 80
-        # OPTIONAL: conversational websocket sidecar (remove if not needed)
-        - name: conversational
-          image: gcr.io/gen-lang-client-0149291660/conversational:latest
-          imagePullPolicy: Always
-          ports:
-            - containerPort: 3000
-              name: http
-          env:
-            - name: NODE_ENV
-              value: "production"
-            - name: PORT
-              value: "3000"
-            - name: HOST
-              value: "0.0.0.0"
-          envFrom:
-            - secretRef:
-                name: conversational-secrets
-          resources:
-            requests:
-              cpu: "100m"
-              memory: "256Mi"
-            limits:
-              cpu: "500m"
-              memory: "512Mi"
-          livenessProbe:
-            httpGet:
-              path: /api/test
-              port: 3000
-            initialDelaySeconds: 30
-            periodSeconds: 10
-            timeoutSeconds: 5
-            failureThreshold: 3
-          readinessProbe:
-            httpGet:
-              path: /api/test
-              port: 3000
-            initialDelaySeconds: 15
-            periodSeconds: 5
-            timeoutSeconds: 3
-            failureThreshold: 2
-          securityContext:
-            allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: false

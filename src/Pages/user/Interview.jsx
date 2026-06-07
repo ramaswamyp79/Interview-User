@@ -1,834 +1,1120 @@
-// InterviewTable.jsx
-import React, { useEffect, useMemo, useState } from "react";
-import { MoreVertical, Edit2, Trash2, Play, Eye, Copy, Download } from "lucide-react";
+// InterviewSession.jsx
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  ChevronDown,
+  Copy,
+  Edit2,
+  Eye,
+  Play,
+  Search,
+  Trash2,
+} from "lucide-react";
 
-const SAMPLE = [
-  {
-    id: "i1",
-    company: "Zeta Solutions",
-    position: "Frontend Engineer",
-    endsIn: { expired: false, credits: 3 },
-    aiUsage: 12,
-    createdAt: "2025-11-18",
-  },
-  {
-    id: "i2",
-    company: "BlueSky Tech",
-    position: "Backend Engineer",
-    endsIn: { expired: true, credits: 0 },
-    aiUsage: 5,
-    createdAt: "2025-10-09",
-  },
-  {
-    id: "i3",
-    company: "Nova Labs",
-    position: "Fullstack Developer",
-    endsIn: { expired: false, credits: 8 },
-    aiUsage: 27,
-    createdAt: "2025-09-26",
-  },
+import sessionService from "../../Services/sessionService";
+import SessionViewModal from "../../Components/SessionViewModal";
+import SessionEditModal from "../../Components/SessionEditModal";
+import ConnectModal from "../../Components/ConnectModal";
+import AILoader from "../../Components/AILoader";
 
-  // New Data Below
-  {
-    id: "i4",
-    company: "Orbit Systems",
-    position: "React Developer",
-    endsIn: { expired: false, credits: 5 },
-    aiUsage: 19,
-    createdAt: "2025-08-14",
-  },
-  {
-    id: "i5",
-    company: "PixelCode Pvt Ltd",
-    position: "UI/UX Engineer",
-    endsIn: { expired: true, credits: 0 },
-    aiUsage: 7,
-    createdAt: "2025-07-11",
-  },
-  {
-    id: "i6",
-    company: "TechHive Solutions",
-    position: "Node.js Developer",
-    endsIn: { expired: false, credits: 12 },
-    aiUsage: 33,
-    createdAt: "2025-06-21",
-  },
-  {
-    id: "i7",
-    company: "CloudSprint",
-    position: "DevOps Engineer",
-    endsIn: { expired: true, credits: 0 },
-    aiUsage: 4,
-    createdAt: "2025-05-03",
-  },
-  {
-    id: "i8",
-    company: "QuantumWare",
-    position: "AI Engineer",
-    endsIn: { expired: false, credits: 9 },
-    aiUsage: 41,
-    createdAt: "2025-08-29",
-  },
-  {
-    id: "i9",
-    company: "BrightPath Digital",
-    position: "Frontend Intern",
-    endsIn: { expired: false, credits: 2 },
-    aiUsage: 10,
-    createdAt: "2025-04-17",
-  },
-  {
-    id: "i10",
-    company: "NetAxis Global",
-    position: "Angular Developer",
-    endsIn: { expired: true, credits: 0 },
-    aiUsage: 16,
-    createdAt: "2025-02-03",
-  },
-  {
-    id: "i11",
-    company: "VisionSoft",
-    position: "Automation Tester",
-    endsIn: { expired: false, credits: 6 },
-    aiUsage: 24,
-    createdAt: "2025-03-21",
-  },
-  {
-    id: "i12",
-    company: "SoftArc Industries",
-    position: "Mobile App Developer",
-    endsIn: { expired: false, credits: 3 },
-    aiUsage: 15,
-    createdAt: "2025-01-14",
-  },
-  {
-    id: "i13",
-    company: "NextGen Dynamics",
-    position: "Backend Intern",
-    endsIn: { expired: true, credits: 0 },
-    aiUsage: 2,
-    createdAt: "2024-12-07",
-  },
-  {
-    id: "i14",
-    company: "PrimeLogic",
-    position: "Laravel Developer",
-    endsIn: { expired: false, credits: 4 },
-    aiUsage: 13,
-    createdAt: "2025-09-01",
-  },
-  {
-    id: "i15",
-    company: "FusionByte",
-    position: "Fullstack Engineer",
-    endsIn: { expired: false, credits: 11 },
-    aiUsage: 38,
-    createdAt: "2025-07-19",
-  },
-  {
-    id: "i16",
-    company: "SolidCore Tech",
-    position: "Python Developer",
-    endsIn: { expired: true, credits: 0 },
-    aiUsage: 6,
-    createdAt: "2025-03-09",
-  },
-  {
-    id: "i17",
-    company: "InnoSphere Labs",
-    position: "AI Research Intern",
-    endsIn: { expired: false, credits: 10 },
-    aiUsage: 29,
-    createdAt: "2025-02-28",
-  },
-  {
-    id: "i18",
-    company: "AeroStack Technologies",
-    position: "SDE-1",
-    endsIn: { expired: false, credits: 7 },
-    aiUsage: 22,
-    createdAt: "2025-05-22",
-  },
-  {
-    id: "i19",
-    company: "MetaEdge Software",
-    position: "Django Developer",
-    endsIn: { expired: true, credits: 0 },
-    aiUsage: 9,
-    createdAt: "2025-01-30",
-  },
-  {
-    id: "i20",
-    company: "BrightLabs",
-    position: "Cloud Engineer",
-    endsIn: { expired: false, credits: 14 },
-    aiUsage: 47,
-    createdAt: "2025-10-11",
-  },
-  {
-    id: "i21",
-    company: "SkyBridge Infotech",
-    position: "Technical Writer",
-    endsIn: { expired: false, credits: 5 },
-    aiUsage: 18,
-    createdAt: "2025-08-02",
-  },
-  {
-    id: "i22",
-    company: "CorePulse Systems",
-    position: "QA Engineer",
-    endsIn: { expired: true, credits: 0 },
-    aiUsage: 8,
-    createdAt: "2025-06-06",
-  },
-  {
-    id: "i23",
-    company: "UrbanSoft Pvt Ltd",
-    position: "React Native Developer",
-    endsIn: { expired: false, credits: 6 },
-    aiUsage: 31,
-    createdAt: "2025-05-19",
-  },
-  {
-    id: "i24",
-    company: "CodeFlow Digital",
-    position: "Software Engineer",
-    endsIn: { expired: false, credits: 12 },
-    aiUsage: 44,
-    createdAt: "2025-09-14",
-  },
-  {
-    id: "i25",
-    company: "AlphaBridge",
-    position: "Product Engineer",
-    endsIn: { expired: true, credits: 0 },
-    aiUsage: 3,
-    createdAt: "2024-11-20",
-  },
-  {
-    id: "i26",
-    company: "LogicWave",
-    position: "SDE Intern",
-    endsIn: { expired: false, credits: 3 },
-    aiUsage: 11,
-    createdAt: "2025-02-10",
-  },
-  {
-    id: "i27",
-    company: "Innoventix",
-    position: "ML Engineer",
-    endsIn: { expired: false, credits: 9 },
-    aiUsage: 36,
-    createdAt: "2025-07-08",
-  },
-  {
-    id: "i28",
-    company: "DataSpring Tech",
-    position: "Data Analyst",
-    endsIn: { expired: true, credits: 0 },
-    aiUsage: 14,
-    createdAt: "2025-01-11",
-  },
-  {
-    id: "i29",
-    company: "CyberNova",
-    position: "Security Engineer",
-    endsIn: { expired: false, credits: 7 },
-    aiUsage: 21,
-    createdAt: "2025-10-25",
-  },
-  {
-    id: "i30",
-    company: "ProximaWorks",
-    position: "Junior Developer",
-    endsIn: { expired: false, credits: 4 },
-    aiUsage: 12,
-    createdAt: "2025-08-10",
-  },
-];
+const PAGE_SIZE = 5;
+const ALL_SESSIONS_LIMIT = 1000;
+const SESSIONS_ALL_QUERY_KEY = ["sessions", "all"];
 
+function formatDate(dateValue) {
+  if (!dateValue) return "N/A";
 
-const PAGE_SIZE = 6;
-
-function formatDate(d) {
   try {
-    return new Date(d).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+    const dateObj =
+      typeof dateValue === "object" && dateValue._seconds
+        ? new Date(dateValue._seconds * 1000)
+        : new Date(dateValue);
+
+    return dateObj.toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   } catch {
-    return d;
+    return "Invalid Date";
   }
 }
 
-function Badge({ children, className = "" }) {
-  return <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${className}`}>{children}</span>;
+function getDateTime(dateValue) {
+  if (!dateValue) return 0;
+
+  try {
+    const dateObj =
+      typeof dateValue === "object" && dateValue._seconds
+        ? new Date(dateValue._seconds * 1000)
+        : new Date(dateValue);
+
+    const time = dateObj.getTime();
+    return Number.isNaN(time) ? 0 : time;
+  } catch {
+    return 0;
+  }
 }
 
-// Simple Modal (center)
+function extractSessions(response) {
+  if (Array.isArray(response)) return response;
+  if (Array.isArray(response?.data)) return response.data;
+  if (Array.isArray(response?.sessions)) return response.sessions;
+  return [];
+}
+
+function extractSingleSession(response) {
+  if (!response) return null;
+
+  if (Array.isArray(response)) return response[0] || null;
+  if (Array.isArray(response?.data)) return response.data[0] || null;
+  if (Array.isArray(response?.sessions)) return response.sessions[0] || null;
+
+  if (response._id || response.id) return response;
+  if (response.session?._id || response.session?.id) return response.session;
+  if (response.data?._id || response.data?.id) return response.data;
+
+  return null;
+}
+
+function normalizeSession(session) {
+  const id = (session?._id || session?.id || "").toString();
+  const sessionStatus = session?.status || "active";
+
+  const isExpired =
+    sessionStatus === "completed" ||
+    sessionStatus === "expired" ||
+    session?.isExpired;
+
+  return {
+    id,
+    company: session?.company || "",
+    position: session?.position || session?.jobDescription || "",
+    status: isExpired ? "expired" : "active",
+    credits: session?.creditsUsed || session?.credits || 0,
+    aiUsage: session?.aiUsage || session?.usage || 0,
+    createdAt: session?.createdAt,
+    raw: session,
+  };
+}
+
+async function fetchAllSessions({ forceFresh = false } = {}) {
+  const firstResponse = await sessionService.listSessions(
+    1,
+    ALL_SESSIONS_LIMIT,
+    "",
+    "",
+    "all",
+    "newest",
+    { forceFresh }
+  );
+
+  const firstRows = extractSessions(firstResponse);
+
+  const totalPages =
+    Number(firstResponse?.totalPages) ||
+    Math.ceil(
+      (Number(firstResponse?.total) || firstRows.length) / ALL_SESSIONS_LIMIT
+    ) ||
+    1;
+
+  let allRows = [...firstRows];
+
+  if (totalPages > 1) {
+    const remainingPages = Array.from(
+      { length: totalPages - 1 },
+      (_, index) => index + 2
+    );
+
+    const remainingResponses = await Promise.all(
+      remainingPages.map((pageNumber) =>
+        sessionService
+          .listSessions(
+            pageNumber,
+            ALL_SESSIONS_LIMIT,
+            "",
+            "",
+            "all",
+            "newest",
+            { forceFresh }
+          )
+          .catch(() => null)
+      )
+    );
+
+    remainingResponses.forEach((response) => {
+      allRows = [...allRows, ...extractSessions(response)];
+    });
+  }
+
+  const uniqueMap = new Map();
+
+  allRows.forEach((session) => {
+    const id = (session?._id || session?.id || "").toString();
+
+    if (id) {
+      uniqueMap.set(id, session);
+    }
+  });
+
+  return Array.from(uniqueMap.values()).map(normalizeSession);
+}
+
 function Modal({ open, onClose, title, children }) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-        onClick={onClose}
-      />
+    <div className="confirm-modal-overlay">
+      <div className="confirm-modal-backdrop" onClick={onClose} />
 
-      {/* Modal Box */}
-      <div className="relative w-full max-w-xl bg-white rounded-2xl p-6 shadow-2xl z-10 transition-all scale-100">
-        
-        {/* Header */}
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
-          <button
-            onClick={onClose}
-            className="text-gray-600 hover:text-black transition"
-          >
+      <div className="confirm-modal-box">
+        <div className="confirm-modal-header">
+          <h3 className="confirm-modal-title">{title}</h3>
+
+          <button type="button" onClick={onClose} className="confirm-close-btn">
             ✕
           </button>
         </div>
 
-        {/* Content */}
-        <div>{children}</div>
+        {children}
       </div>
     </div>
   );
 }
 
-function Confirm({ open, onCancel, onConfirm, title, message, confirmLabel = "Confirm" }) {
-  return (
-    <Modal open={open} onClose={onCancel} title={title}>
-      <div className="bg-white p-4 rounded-xl shadow-md">
-        <p className="text-sm text-gray-700 mb-4">{message}</p>
-
-        <div className="flex justify-end gap-2">
-          <button
-            onClick={onCancel}
-            className="px-3 py-2 rounded-md border border-gray-300 hover:bg-gray-100 transition"
-          >
-            Cancel
-          </button>
-
-          <button
-            onClick={onConfirm}
-            className="px-3 py-2 rounded-md theme-primary"
-          >
-            {confirmLabel}
-          </button>
-        </div>
-      </div>
-    </Modal>
-  );
-}
-
-
-// View modal
-function View({ open, item, onClose }) {
-  return (
-    <Modal open={open} onClose={onClose} title={`View — ${item?.company || "Item"}`}>
-      {item ? (
-        <div className="space-y-2 text-sm">
-          <div>
-            <strong>Company:</strong> {item.company}
-          </div>
-          <div>
-            <strong>Position:</strong> {item.position}
-          </div>
-          <div>
-            <strong>Ends In:</strong> {item.endsIn?.expired ? "Expired" : `${item.endsIn?.credits} credits`}
-          </div>
-
-          <div>
-            <strong>AI Usage:</strong> {item.aiUsage}
-          </div>
-          <div>
-            <strong>Created At:</strong> {formatDate(item.createdAt)}
-          </div>
-        </div>
-      ) : (
-        <div>Loading...</div>
-      )}
-    </Modal>
-  );
-}
-
-// Edit modal
-function Edit({ open, item, onClose, onSave }) {
-  const [form, setForm] = useState(
-    item || { company: "", position: "", endsIn: { expired: false, credits: 0, date: "" }, aiUsage: 0, createdAt: "" }
-  );
-
-  useEffect(() => setForm(item || { company: "", position: "", endsIn: { expired: false, credits: 0, date: "" }, aiUsage: 0, createdAt: "" }), [item]);
-
-  function setField(path, value) {
-    setForm((f) => {
-      const copy = JSON.parse(JSON.stringify(f));
-      const parts = path.split(".");
-      let cur = copy;
-      for (let i = 0; i < parts.length - 1; i++) cur = cur[parts[i]];
-      cur[parts[parts.length - 1]] = value;
-      return copy;
-    });
-  }
-
-  return (
-   <Modal
-  open={open}
-  onClose={onClose}
-  title={item ? "Edit Interview" : "Add Interview"}
->
-  <div className="bg-white p-5 rounded-2xl shadow-xl border border-gray-100">
-
-    {/* Grid Form */}
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-      {/* Company */}
-      <label className="flex flex-col gap-1">
-        <span className="text-xs font-medium text-gray-600">Company</span>
-        <input
-          value={form.company}
-          onChange={(e) => setField("company", e.target.value)}
-          className="px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-theme-primary/40 focus:outline-none bg-gray-50"
-        />
-      </label>
-
-      {/* Position */}
-      <label className="flex flex-col gap-1">
-        <span className="text-xs font-medium text-gray-600">Position</span>
-        <input
-          value={form.position}
-          onChange={(e) => setField("position", e.target.value)}
-          className="px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-theme-primary/40 focus:outline-none bg-gray-50"
-        />
-      </label>
-
-      {/* Date */}
-      <label className="flex flex-col gap-1">
-        <span className="text-xs font-medium text-gray-600">Ends In — Date</span>
-        <input
-          type="date"
-          value={form.endsIn?.date || ""}
-          onChange={(e) => setField("endsIn.date", e.target.value)}
-          className="px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-theme-primary/40 focus:outline-none bg-gray-50"
-        />
-      </label>
-
-      {/* Credits */}
-      <label className="flex flex-col gap-1">
-        <span className="text-xs font-medium text-gray-600">Credits</span>
-        <input
-          type="number"
-          min={0}
-          value={form.endsIn?.credits || 0}
-          onChange={(e) =>
-            setField("endsIn.credits", Number(e.target.value) || 0)
-          }
-          className="px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-theme-primary/40 focus:outline-none bg-gray-50"
-        />
-      </label>
-
-      {/* AI Usage */}
-      <label className="flex flex-col gap-1">
-        <span className="text-xs font-medium text-gray-600">AI Usage (count)</span>
-        <input
-          type="number"
-          value={form.aiUsage || 0}
-          onChange={(e) => setField("aiUsage", Number(e.target.value) || 0)}
-          className="px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-theme-primary/40 focus:outline-none bg-gray-50"
-        />
-      </label>
-
-      {/* Created At */}
-      <label className="flex flex-col gap-1">
-        <span className="text-xs font-medium text-gray-600">Created At</span>
-        <input
-          type="date"
-          value={form.createdAt || ""}
-          onChange={(e) => setField("createdAt", e.target.value)}
-          className="px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-theme-primary/40 focus:outline-none bg-gray-50"
-        />
-      </label>
-
-    
-
-    </div>
-
-    {/* Buttons */}
-    <div className="flex justify-end gap-3 mt-6">
-      <button
-        onClick={onClose}
-        className="px-4 py-2.5 rounded-lg border bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
-      >
-        Cancel
-      </button>
-
-      <button
-        onClick={() => onSave(form)}
-        className="px-5 py-2.5 rounded-lg theme-primary text-white shadow-md hover:shadow-lg transition"
-      >
-        Save
-      </button>
-    </div>
-
-  </div>
-</Modal>
-
-  );
-}
-
-// Actions menu (hamburger)
-function ActionsMenu({ open, anchorRect, onClose, onAction }) {
+function Confirm({
+  open,
+  onCancel,
+  onConfirm,
+  title,
+  message,
+  confirmLabel = "Confirm",
+  disabled = false,
+}) {
   if (!open) return null;
 
-  const style = anchorRect
-    ? {
-      position: "absolute",
-      top: anchorRect.bottom + window.scrollY + 6,
-      left: anchorRect.left + window.scrollX,
-      zIndex: 60,
+  const handleBackdropClick = () => {
+    if (!disabled) {
+      onCancel();
     }
-    : { position: "absolute", zIndex: 60 };
+  };
 
   return (
-    <div style={style} className="w-36 bg-white rounded-xl shadow-lg border overflow-hidden">
-      <button onClick={() => onAction("start")} className="w-full text-left px-3 py-2 hover:bg-gray-50 flex items-center gap-2">
-        <Play size={16} /> Start session again
-      </button>
-      <button onClick={() => onAction("view")} className="w-full text-left px-3 py-2 hover:bg-gray-50 flex items-center gap-2">
-        <Eye size={16} /> View
-      </button>
-      <button onClick={() => onAction("duplicate")} className="w-full text-left px-3 py-2 hover:bg-gray-50 flex items-center gap-2">
-        <Copy size={16} /> Duplicate
-      </button>
-      <button onClick={() => onAction("export")} className="w-full text-left px-3 py-2 hover:bg-gray-50 flex items-center gap-2">
-        <Download size={16} /> Export
-      </button>
+    <div
+      className="confirm-modal-overlay"
+      role="presentation"
+      onClick={handleBackdropClick}
+    >
+      <div
+        className="confirm-modal-box"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirm-modal-title"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <button
+          type="button"
+          className="confirm-close-btn"
+          onClick={onCancel}
+          disabled={disabled}
+          aria-label="Close confirmation modal"
+        >
+          <svg
+            viewBox="0 0 20 20"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          >
+            <path d="M5 5l10 10M15 5L5 15" />
+          </svg>
+        </button>
+
+        <div className="confirm-modal-body">
+          <div className="confirm-icon-wrap">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
+              <path d="M12 9v4" />
+              <path d="M12 17h.01" />
+            </svg>
+          </div>
+
+          <h3 id="confirm-modal-title" className="confirm-modal-title">
+            {title}
+          </h3>
+
+          <p className="confirm-message">{message}</p>
+
+          <div className="confirm-actions">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="btn-cancel-soft"
+              disabled={disabled}
+            >
+              Cancel
+            </button>
+
+            <button
+              type="button"
+              onClick={onConfirm}
+              className="btn-confirm-danger"
+              disabled={disabled}
+            >
+              {disabled && (
+                <span className="confirm-btn-spinner" aria-hidden="true" />
+              )}
+              {confirmLabel}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+function SessionToast({ toast }) {
+  if (!toast?.show) return null;
+
+  return (
+    <div className={`session-toast ${toast.type === "error" ? "error" : ""}`}>
+      <span className="session-toast-icon">
+        {toast.type === "error" ? "✕" : "✓"}
+      </span>
+      <span>{toast.message}</span>
     </div>
   );
 }
 
-export default function InterviewTable() {
-  const [data, setData] = useState(SAMPLE);
-  const [query, setQuery] = useState("");
+export default function InterviewSession() {
+  const [searchInput, setSearchInput] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+
   const [companyFilter, setCompanyFilter] = useState("");
-  const [expiredFilter, setExpiredFilter] = useState("all"); // all, active, expired
+  const [expiredFilter, setExpiredFilter] = useState("all");
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState("newest");
 
-  // modals
   const [editItem, setEditItem] = useState(null);
   const [viewItem, setViewItem] = useState(null);
+  const [connectItem, setConnectItem] = useState(null);
+  const [isConnectOpen, setIsConnectOpen] = useState(false);
   const [confirm, setConfirm] = useState({ open: false, id: null });
+  const [toast, setToast] = useState({
+    show: false,
+    message: "",
+    type: "success",
+  });
 
-  // actions menu
-  const [menu, setMenu] = useState({ open: false, id: null, rect: null });
+  const toastTimerRef = useRef(null);
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
-  // responsive width (for card variants on tablet vs mobile)
-  const [w, setW] = useState(typeof window !== "undefined" ? window.innerWidth : 1200);
-  useEffect(() => {
-    const onResize = () => setW(window.innerWidth);
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
-
-  const companies = useMemo(() => Array.from(new Set(data.map((d) => d.company))).sort(), [data]);
-
-  const filtered = useMemo(() => {
-    let x = data.slice();
-    if (query.trim()) {
-      const q = query.toLowerCase();
-      x = x.filter((it) => it.company.toLowerCase().includes(q) || it.position.toLowerCase().includes(q));
+  const showToast = (message, type = "success") => {
+    if (toastTimerRef.current) {
+      clearTimeout(toastTimerRef.current);
     }
-    if (companyFilter) x = x.filter((it) => it.company === companyFilter);
-    if (expiredFilter === "expired") x = x.filter((it) => it.endsIn?.expired);
-    if (expiredFilter === "active") x = x.filter((it) => !it.endsIn?.expired);
 
-    x.sort((a, b) => {
-      const ta = new Date(a.createdAt).getTime();
-      const tb = new Date(b.createdAt).getTime();
-      return sort === "newest" ? tb - ta : ta - tb;
+    setToast({
+      show: true,
+      message,
+      type,
     });
 
-    return x;
-  }, [data, query, companyFilter, expiredFilter, sort]);
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+    toastTimerRef.current = setTimeout(() => {
+      setToast({
+        show: false,
+        message: "",
+        type: "success",
+      });
+    }, 2500);
+  };
 
   useEffect(() => {
-    if (page > totalPages) setPage(1);
-  }, [totalPages]);
+    return () => {
+      if (toastTimerRef.current) {
+        clearTimeout(toastTimerRef.current);
+      }
+    };
+  }, []);
 
-  const pageItems = useMemo(() => {
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedQuery(searchInput.trim());
+    }, 400);
+
+    return () => clearTimeout(handler);
+  }, [searchInput]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedQuery, companyFilter, expiredFilter, sort]);
+
+  const {
+    data: allSessions = [],
+    isLoading: loading,
+    isFetching,
+  } = useQuery({
+    queryKey: SESSIONS_ALL_QUERY_KEY,
+    queryFn: () => fetchAllSessions(),
+    placeholderData: (previousData) => previousData,
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
+  });
+
+  const refreshSessions = useCallback(async () => {
+    const freshSessions = await fetchAllSessions({ forceFresh: true });
+
+    queryClient.setQueryData(SESSIONS_ALL_QUERY_KEY, freshSessions);
+
+    return freshSessions;
+  }, [queryClient]);
+
+  const refreshSessionsInBackground = useCallback(() => {
+    refreshSessions().catch((error) => {
+      console.error("Failed to refresh sessions:", error);
+    });
+  }, [refreshSessions]);
+
+  useEffect(() => {
+    const handleSessionUpdated = (event) => {
+      const changedSession = event?.detail?.session || null;
+
+      if (changedSession) {
+        const normalizedSession = normalizeSession(changedSession);
+
+        if (normalizedSession.id) {
+          queryClient.setQueryData(SESSIONS_ALL_QUERY_KEY, (oldSessions = []) => {
+            const safeSessions = Array.isArray(oldSessions) ? oldSessions : [];
+            const alreadyExists = safeSessions.some(
+              (session) => session.id === normalizedSession.id
+            );
+
+            if (alreadyExists) {
+              return safeSessions.map((session) =>
+                session.id === normalizedSession.id ? normalizedSession : session
+              );
+            }
+
+            return [normalizedSession, ...safeSessions];
+          });
+
+          setPage(1);
+          return;
+        }
+      }
+
+      refreshSessionsInBackground();
+    };
+
+    window.addEventListener("session-updated", handleSessionUpdated);
+
+    return () => {
+      window.removeEventListener("session-updated", handleSessionUpdated);
+    };
+  }, [queryClient, refreshSessionsInBackground]);
+
+  const companies = useMemo(() => {
+    return Array.from(
+      new Set(allSessions.map((item) => item.company).filter(Boolean))
+    ).sort((a, b) => a.localeCompare(b));
+  }, [allSessions]);
+
+  const filteredRows = useMemo(() => {
+    const search = debouncedQuery.toLowerCase();
+
+    const rows = allSessions.filter((item) => {
+      const company = item.company.toLowerCase();
+      const position = item.position.toLowerCase();
+
+      const matchesSearch =
+        !search || company.includes(search) || position.includes(search);
+
+      const matchesCompany = !companyFilter || item.company === companyFilter;
+
+      const matchesStatus =
+        expiredFilter === "all" || item.status === expiredFilter;
+
+      return matchesSearch && matchesCompany && matchesStatus;
+    });
+
+    rows.sort((a, b) => {
+      const firstDate = getDateTime(a.createdAt);
+      const secondDate = getDateTime(b.createdAt);
+
+      return sort === "newest"
+        ? secondDate - firstDate
+        : firstDate - secondDate;
+    });
+
+    return rows;
+  }, [allSessions, debouncedQuery, companyFilter, expiredFilter, sort]);
+
+  const totalRecords = filteredRows.length;
+  const totalPages = Math.max(1, Math.ceil(totalRecords / PAGE_SIZE));
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
+
+  const data = useMemo(() => {
     const start = (page - 1) * PAGE_SIZE;
-    return filtered.slice(start, start + PAGE_SIZE);
-  }, [filtered, page]);
+    return filteredRows.slice(start, start + PAGE_SIZE);
+  }, [filteredRows, page]);
 
-  // actions
+  const deleteMutation = useMutation({
+    mutationFn: (id) => sessionService.deleteSession(id),
+
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({
+        queryKey: SESSIONS_ALL_QUERY_KEY,
+        exact: true,
+      });
+
+      const previousSessions = queryClient.getQueryData(SESSIONS_ALL_QUERY_KEY);
+
+      queryClient.setQueryData(SESSIONS_ALL_QUERY_KEY, (oldSessions = []) => {
+        if (!Array.isArray(oldSessions)) return oldSessions;
+
+        return oldSessions.filter((session) => session.id !== id);
+      });
+
+      return { previousSessions };
+    },
+
+    onSuccess: () => {
+      showToast("Interview deleted successfully.");
+    },
+
+    onError: (error, _id, context) => {
+      if (context?.previousSessions) {
+        queryClient.setQueryData(
+          SESSIONS_ALL_QUERY_KEY,
+          context.previousSessions
+        );
+      }
+
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to delete interview.";
+
+      showToast(message, "error");
+    },
+
+    onSettled: () => {
+      refreshSessionsInBackground();
+    },
+  });
+
+  const duplicateMutation = useMutation({
+    mutationFn: (row) => sessionService.duplicateSession(row.id),
+
+    onMutate: async (row) => {
+      await queryClient.cancelQueries({
+        queryKey: SESSIONS_ALL_QUERY_KEY,
+        exact: true,
+      });
+
+      const previousSessions = queryClient.getQueryData(SESSIONS_ALL_QUERY_KEY);
+
+      const now = new Date().toISOString();
+      const tempId = `temp-duplicate-${row.id}-${Date.now()}`;
+
+      const optimisticRaw = {
+        ...(row.raw || {}),
+        _id: tempId,
+        id: tempId,
+        title: `${row.raw?.title || "Session"} (Copy)`,
+        createdAt: now,
+        updatedAt: now,
+      };
+
+      const optimisticSession = normalizeSession(optimisticRaw);
+
+      queryClient.setQueryData(SESSIONS_ALL_QUERY_KEY, (oldSessions = []) => {
+        if (!Array.isArray(oldSessions)) return oldSessions;
+
+        return [optimisticSession, ...oldSessions];
+      });
+
+      return {
+        previousSessions,
+        tempId,
+      };
+    },
+
+    onSuccess: (response, _row, context) => {
+      const createdSession = extractSingleSession(response);
+
+      if (createdSession && context?.tempId) {
+        const normalizedSession = normalizeSession(createdSession);
+
+        queryClient.setQueryData(SESSIONS_ALL_QUERY_KEY, (oldSessions = []) => {
+          if (!Array.isArray(oldSessions)) return oldSessions;
+
+          return oldSessions.map((session) =>
+            session.id === context.tempId ? normalizedSession : session
+          );
+        });
+      }
+
+      showToast("Interview duplicated successfully.");
+
+      if (createdSession) {
+        window.dispatchEvent(
+          new CustomEvent("session-updated", {
+            detail: {
+              type: "duplicated",
+              session: createdSession,
+            },
+          })
+        );
+      }
+    },
+
+    onError: (error, _row, context) => {
+      if (context?.previousSessions) {
+        queryClient.setQueryData(
+          SESSIONS_ALL_QUERY_KEY,
+          context.previousSessions
+        );
+      }
+
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to duplicate interview.";
+
+      showToast(message, "error");
+    },
+
+    onSettled: () => {
+      refreshSessionsInBackground();
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, payload }) => sessionService.updateSession(id, payload),
+
+    onMutate: async ({ id, payload }) => {
+      await queryClient.cancelQueries({
+        queryKey: SESSIONS_ALL_QUERY_KEY,
+        exact: true,
+      });
+
+      const previousSessions = queryClient.getQueryData(SESSIONS_ALL_QUERY_KEY);
+
+      queryClient.setQueryData(SESSIONS_ALL_QUERY_KEY, (oldSessions = []) => {
+        if (!Array.isArray(oldSessions)) return oldSessions;
+
+        return oldSessions.map((session) => {
+          if (session.id !== id) return session;
+
+          const optimisticRaw = {
+            ...(session.raw || {}),
+            ...payload,
+            _id: id,
+            id,
+            updatedAt: new Date().toISOString(),
+          };
+
+          return normalizeSession(optimisticRaw);
+        });
+      });
+
+      return { previousSessions };
+    },
+
+    onSuccess: (response) => {
+      const updatedSession = extractSingleSession(response) || response;
+
+      if (updatedSession) {
+        const normalizedSession = normalizeSession(updatedSession);
+
+        queryClient.setQueryData(SESSIONS_ALL_QUERY_KEY, (oldSessions = []) => {
+          if (!Array.isArray(oldSessions)) return oldSessions;
+
+          return oldSessions.map((session) =>
+            session.id === normalizedSession.id ? normalizedSession : session
+          );
+        });
+      }
+
+      showToast("Interview updated successfully.");
+    },
+
+    onError: (error, _variables, context) => {
+      if (context?.previousSessions) {
+        queryClient.setQueryData(
+          SESSIONS_ALL_QUERY_KEY,
+          context.previousSessions
+        );
+      }
+
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to update interview.";
+
+      showToast(message, "error");
+    },
+
+    onSettled: () => {
+      refreshSessionsInBackground();
+    },
+  });
+
+  const connectMutation = useMutation({
+    mutationFn: ({ id, payload }) => sessionService.connectSession(id, payload),
+  });
+
+  const deleting = deleteMutation.isPending || deleteMutation.isLoading;
+  const duplicating = duplicateMutation.isPending || duplicateMutation.isLoading;
+
   function handleDelete(id) {
     setConfirm({ open: true, id });
   }
+
   function confirmDelete() {
-    setData((d) => d.filter((it) => it.id !== confirm.id));
+    if (!confirm.id || deleting) return;
+
+    const idToDelete = confirm.id;
+
     setConfirm({ open: false, id: null });
+    deleteMutation.mutate(idToDelete);
   }
 
-  function handleSave(updated) {
-    if (!updated.id) {
-      // add new
-      const item = { ...updated, id: `i${Date.now()}` };
-      setData((d) => [item, ...d]);
-    } else {
-      setData((d) => d.map((it) => (it.id === updated.id ? updated : it)));
+  async function handleView(row) {
+    try {
+      let full = row.raw || null;
+
+      if (!full || !full._id) {
+        full = await sessionService.getSession(row.id, { forceFresh: true });
+      }
+
+      setViewItem(full);
+    } catch (error) {
+      console.error("Failed to load session for view:", error);
+      showToast("Failed to load interview details.", "error");
     }
-    setEditItem(null);
   }
 
-  function openMenuFor(e, id) {
-    e.stopPropagation();
-    const rect = e.currentTarget.getBoundingClientRect();
-    setMenu({ open: true, id, rect });
-  }
+  async function handleEdit(row) {
+    try {
+      let full = row.raw || null;
 
-  function onMenuAction(action) {
-    const id = menu.id;
-    const item = data.find((d) => d.id === id);
-    setMenu({ open: false, id: null, rect: null });
-    if (!item) return;
-    if (action === "start") {
-      alert(`Starting session for ${item.company} — ${item.position}`);
-    } else if (action === "view") {
-      setViewItem(item);
-    } else if (action === "duplicate") {
-      const dup = { ...item, id: `i${Date.now()}`, company: item.company + " (copy)" };
-      setData((d) => [dup, ...d]);
-    } else if (action === "export") {
-      const blob = new Blob([JSON.stringify(item, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${item.company}-${item.position}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
+      if (!full || !full._id) {
+        full = await sessionService.getSession(row.id, { forceFresh: true });
+      }
+
+      setEditItem(full);
+    } catch (error) {
+      console.error("Failed to load session for edit:", error);
+      showToast("Failed to load interview for edit.", "error");
     }
+  }
+
+  function handleStart(row) {
+    setConnectItem(row);
+    setIsConnectOpen(true);
+  }
+
+  function handleDuplicate(row) {
+    if (duplicating) return;
+
+    duplicateMutation.mutate(row);
+  }
+
+ async function handleConnectActivate({
+  shareAudio,
+  connectionMethod,
+  meetingLink,
+}) {
+  if (!connectItem) {
+    return { blocked: true, reason: "missing-session" };
+  }
+
+  try {
+    const response = await connectMutation.mutateAsync({
+      id: connectItem.id,
+      payload: {
+        shareAudio,
+        connectionMethod,
+        meetingLink,
+        language: connectItem.raw?.language,
+        aiModel: connectItem.raw?.aiModel,
+      },
+    });
+
+    if (!response || !response.session) {
+      console.warn("Connect response missing session, returning safe fallback");
+
+      showToast("Unable to start interview session. Please try again.", "error");
+
+      return {
+        blocked: true,
+        reason: "missing-response",
+      };
+    }
+
+    await queryClient.invalidateQueries({ queryKey: ["profile"] });
+    refreshSessionsInBackground();
+
+    return {
+      session: response.session,
+      user: response.user || null,
+    };
+  } catch (error) {
+    console.error("Connect failed:", error);
+
+    const rawMessage =
+      error?.response?.data?.message ||
+      error?.message ||
+      "Failed to activate interview.";
+
+    const lowerMessage = String(rawMessage).toLowerCase();
+
+    const isCreditError =
+      lowerMessage.includes("insufficient") ||
+      lowerMessage.includes("credit") ||
+      lowerMessage.includes("not enough") ||
+      lowerMessage.includes("balance");
+
+    const message = isCreditError
+      ? "Please buy credits first to start your interview."
+      : rawMessage;
+
+    showToast(message, "error");
+
+    if (isCreditError) {
+      setTimeout(() => {
+        setIsConnectOpen(false);
+        setConnectItem(null);
+        navigate("/buy-credits");
+      }, 1200);
+
+      return {
+        blocked: true,
+        reason: "credits",
+      };
+    }
+
+    return {
+      blocked: true,
+      reason: "error",
+    };
+  }
+}
+
+  function getDefaultUrl(method) {
+    switch (method) {
+      case "zoom":
+        return "https://zoom.us/";
+      case "meet":
+        return "https://meet.google.com/";
+      case "teams":
+        return "https://teams.microsoft.com/";
+      case "whatsapp":
+        return "https://web.whatsapp.com/";
+      default:
+        return "/";
+    }
+  }
+
+  const startRecord = totalRecords === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+
+  const endRecord = Math.min(page * PAGE_SIZE, totalRecords);
+
+  if (loading && !allSessions.length) {
+    return (
+      <div className="relative flex h-[60vh] items-center justify-center">
+        <AILoader text="Loading Interviews..." />
+      </div>
+    );
   }
 
   return (
-    <div className="p-2 md:p-4 lg:p-4">
+    <>
+      <SessionToast toast={toast} />
 
+      <div className="content interview-page">
+        <div className="filter-bar">
+          <div className="search-wrap">
+            <Search className="search-icon" />
 
-  <div className="mb-6 w-full">
-  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <input
+              type="text"
+              value={searchInput}
+              onChange={(event) => setSearchInput(event.target.value)}
+              className="search-input"
+              placeholder="Search company or position..."
+            />
+          </div>
 
-    {/* Search */}
-    <div className="flex flex-col">
-      <label className="text-xs font-medium text-gray-600 mb-1">
-        Search
-      </label>
-      <input
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search company or position..."
-        className="px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-theme-primary focus:border-theme-primary transition w-full text-sm"
-      />
-    </div>
+          <div className="select-wrap">
+            <select
+              value={companyFilter}
+              onChange={(event) => setCompanyFilter(event.target.value)}
+              className="filter-select"
+            >
+              <option value="">All Companies</option>
 
-    {/* Company Filter */}
-    <div className="flex flex-col">
-      <label className="text-xs font-medium text-gray-600 mb-1">
-        Company
-      </label>
-      <select
-        value={companyFilter}
-        onChange={(e) => setCompanyFilter(e.target.value)}
-        className="px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-theme-primary focus:border-theme-primary transition text-sm"
-      >
-        <option value="">All Companies</option>
-        {companies.map((c) => (
-          <option key={c} value={c}>
-            {c}
-          </option>
-        ))}
-      </select>
-    </div>
+              {companies.map((company) => (
+                <option key={company} value={company}>
+                  {company}
+                </option>
+              ))}
+            </select>
 
-    {/* Status Filter */}
-    <div className="flex flex-col">
-      <label className="text-xs font-medium text-gray-600 mb-1">
-        Status
-      </label>
-      <select
-        value={expiredFilter}
-        onChange={(e) => setExpiredFilter(e.target.value)}
-        className="px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-theme-primary focus:border-theme-primary transition text-sm"
-      >
-        <option value="all">All</option>
-        <option value="active">Active</option>
-        <option value="expired">Expired</option>
-      </select>
-    </div>
+            <ChevronDown className="select-chevron" />
+          </div>
 
-    {/* Sorting */}
-    <div className="flex flex-col">
-      <label className="text-xs font-medium text-gray-600 mb-1">
-        Sort By
-      </label>
-      <select
-        value={sort}
-        onChange={(e) => setSort(e.target.value)}
-        className="px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-theme-primary focus:border-theme-primary transition text-sm"
-      >
-        <option value="newest">Newest</option>
-        <option value="oldest">Oldest</option>
-      </select>
-    </div>
-  </div>
-</div>
+          <div className="select-wrap">
+            <select
+              value={expiredFilter}
+              onChange={(event) => setExpiredFilter(event.target.value)}
+              className="filter-select"
+            >
+              <option value="all">All</option>
+              <option value="active">Active</option>
+              <option value="expired">Expired</option>
+            </select>
 
+            <ChevronDown className="select-chevron" />
+          </div>
 
-      <div className="glass-card rounded-2xl overflow-hidden border">
-        {/* Desktop table (lg and above) */}
-        <div className="hidden lg:grid grid-cols-[60px_1fr_1fr_220px_160px_120px_160px] bg-white/40 px-4 py-3 font-semibold text-gray-700">
-          <div className="flex items-center">S.No</div>
-          <div>Company</div>
-          <div>Position</div>
-          <div>Ends In </div>
-          <div>Created At</div>
-          <div>AI usage</div>
-          <div className="text-right">Action</div>
-        </div>
-
-        {/* rows (desktop) */}
-        <div className="hidden lg:block divide-y">
-          {pageItems.map((row, idx) => {
-            const sno = (page - 1) * PAGE_SIZE + idx + 1;
-            return (
-              <div key={row.id} className="grid grid-cols-[60px_1fr_1fr_220px_160px_120px_160px] px-4 py-3 items-center ">
-                <div className="text-sm text-gray-700">{sno}</div>
-                <div className="font-medium">{row.company}</div>
-                <div className="text-sm text-gray-600">{row.position}</div>
-                <div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <Badge className={`${row.endsIn?.expired ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"}`}>
-                        {row.endsIn?.expired ? "Expired" : "Active"}
-                      </Badge>
-                      <span className="text-sm">{row.endsIn?.credits} credits</span>
-                    </div>
-                  </div>
-
-                </div>
-
-                <div className="text-sm">{formatDate(row.createdAt)}</div>
-
-                <div className="text-sm">{row.aiUsage} usages</div>
-
-                <div className="flex justify-end items-center gap-2">
-                  {/* Hamburger first */}
-                  <button onClick={(e) => openMenuFor(e, row.id)} className="p-2 glass rounded-lg" title="More">
-                    <MoreVertical size={16} />
-                  </button>
-
-                  <button onClick={() => setEditItem(row)} className="p-2 glass rounded-lg" title="Edit">
-                    <Edit2 size={16} />
-                  </button>
-
-                  <button onClick={() => handleDelete(row.id)} className="p-2 bg-red-50 text-red-600 rounded-lg" title="Delete">
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-
-          {pageItems.length === 0 && <div className="p-6 text-center text-gray-600">No records found.</div>}
-        </div>
-
-        {/* Cards for tablet (md) and mobile (sm) */}
-        <div className="lg:hidden p-2 space-y-3">
-          {pageItems.map((row, idx) => {
-            // card variant: tablet (md: show more details horizontally), mobile (sm: stacked)
-            const isTablet = w >= 640 && w < 1024; // md-range
-            return (
-              <div key={row.id} className={`p-3 rounded-xl border ${isTablet ? "bg-white/80 flex items-center justify-between gap-4" : "bg-white/70"} `}>
-                {/* Left content */}
-                <div className={`${isTablet ? "flex items-center gap-4 flex-1" : ""}`}>
-                  <div className={`${isTablet ? "w-14 text-sm text-gray-700" : ""}`}>
-                    <div className="font-medium">{row.company}</div>
-                    <div className="text-sm text-gray-600">{row.position}</div>
-                  </div>
-
-                  <div className={`${isTablet ? "flex items-center gap-3" : "mt-2"}`}>
-                    <div>
-                      <Badge className={`${row.endsIn?.expired ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"}`}>
-                        {row.endsIn?.expired ? "Expired" : "Active"}
-                      </Badge>
-                    </div>
-
-                    <div className="text-xs text-gray-600">
-                      <div>AI: {row.aiUsage}</div>
-                      <div className="mt-1">Created: {formatDate(row.createdAt)}</div>
-                    </div>
-
-                  </div>
-                </div>
-
-                {/* actions */}
-                <div className="flex items-start gap-2 mt-3 md:mt-0">
-                  <button onClick={(e) => openMenuFor(e, row.id)} className="p-2 glass rounded-lg" title="More">
-                    <MoreVertical size={16} />
-                  </button>
-
-                  <button onClick={() => setEditItem(row)} className="p-2 glass rounded-lg" title="Edit">
-                    <Edit2 size={16} />
-                  </button>
-
-                  <button onClick={() => handleDelete(row.id)} className="p-2 bg-red-50 text-red-600 rounded-lg" title="Delete">
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-
-          {pageItems.length === 0 && <div className="p-6 text-center text-gray-600">No records found.</div>}
-        </div>
-
-        {/* footer / pagination */}
-        <div className="border-t px-4 py-3 flex flex-col md:flex-row items-center justify-between gap-3">
-          <div className="text-sm text-gray-600">Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length}</div>
-
-          <div className="flex items-center gap-2">
-            <button disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))} className={`px-3 py-1 rounded-md glass ${page === 1 ? "opacity-50" : "hover:scale-105"}`}>
-              Prev
+          <div className="ml-auto">
+            <button
+              type="button"
+              onClick={() =>
+                setSort((current) =>
+                  current === "newest" ? "oldest" : "newest"
+                )
+              }
+              className="sort-btn"
+            >
+              <span>{sort === "newest" ? "Newest" : "Oldest"}</span>
+              <ChevronDown />
             </button>
+          </div>
+        </div>
 
-            {[...Array(totalPages)].map((_, i) => {
-              const num = i + 1;
-              return (
-                <button key={num} onClick={() => setPage(num)} className={`px-3 py-1 rounded-md ${num === page ? "theme-primary" : "glass"}`}>
-                  {num}
-                </button>
-              );
-            })}
+        <div className="table-card">
+          <table className="session-table">
+            <thead>
+              <tr>
+                <th className="col-sno">S.No</th>
+                <th>Company</th>
+                <th>Position</th>
+                <th>Ends In</th>
+                <th>Created At</th>
+                <th>AI Usage</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
 
-            <button disabled={page === totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))} className={`px-3 py-1 rounded-md glass ${page === totalPages ? "opacity-50" : "hover:scale-105"}`}>
-              Next
-            </button>
+            <tbody>
+              {data.map((row, index) => {
+                const serialNo = (page - 1) * PAGE_SIZE + index + 1;
+                const isExpired = row.status === "expired";
+
+                return (
+                  <tr key={row.id}>
+                    <td className="col-sno">{serialNo}</td>
+
+                    <td className="col-company">{row.company || "—"}</td>
+
+                    <td className="col-pos">{row.position || "—"}</td>
+
+                    <td>
+                      <div className="status-cell">
+                        <span
+                          className={`badge ${
+                            isExpired ? "badge-expired" : "badge-active"
+                          }`}
+                        >
+                          {isExpired ? "Expired" : "Active"}
+                        </span>
+
+                        <span className="credits-txt">
+                          {row.credits} credits
+                        </span>
+                      </div>
+                    </td>
+
+                    <td className="col-date">{formatDate(row.createdAt)}</td>
+
+                    <td className="col-usage">{row.aiUsage}</td>
+
+                    <td>
+                      <div className="action-cell">
+                        <button
+                          type="button"
+                          className="action-btn"
+                          title="View session"
+                          aria-label="View session"
+                          onClick={() => handleView(row)}
+                        >
+                          <Eye />
+                        </button>
+
+                        <button
+                          type="button"
+                          className="action-btn"
+                          title="Start session"
+                          aria-label="Start session"
+                          onClick={() => handleStart(row)}
+                        >
+                          <Play />
+                        </button>
+
+                        <button
+                          type="button"
+                          className="action-btn"
+                          title="Duplicate session"
+                          aria-label="Duplicate session"
+                          disabled={duplicating}
+                          onClick={() => handleDuplicate(row)}
+                        >
+                          <Copy />
+                        </button>
+
+                        <button
+                          type="button"
+                          className="action-btn"
+                          title="Edit session"
+                          aria-label="Edit session"
+                          onClick={() => handleEdit(row)}
+                        >
+                          <Edit2 />
+                        </button>
+
+                        <button
+                          type="button"
+                          className="action-btn del"
+                          title="Delete session"
+                          aria-label="Delete session"
+                          disabled={deleting}
+                          onClick={() => handleDelete(row.id)}
+                        >
+                          <Trash2 />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+
+              {data.length === 0 && (
+                <tr>
+                  <td colSpan="7" className="empty-table-cell">
+                    No records found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+
+          <div className="table-footer">
+            <div className="showing-text">
+              Showing {startRecord} – {endRecord} of {totalRecords} Sessions
+            </div>
+
+            <div className="pagination">
+              <button
+                type="button"
+                disabled={page === 1}
+                onClick={() => setPage((current) => Math.max(1, current - 1))}
+                className="page-btn"
+              >
+                Prev
+              </button>
+
+              {Array.from({ length: totalPages }, (_, index) => {
+                const pageNumber = index + 1;
+
+                return (
+                  <button
+                    key={pageNumber}
+                    type="button"
+                    onClick={() => setPage(pageNumber)}
+                    className={`page-btn ${
+                      pageNumber === page ? "active" : ""
+                    }`}
+                  >
+                    {pageNumber}
+                  </button>
+                );
+              })}
+
+              <button
+                type="button"
+                disabled={page === totalPages}
+                onClick={() =>
+                  setPage((current) => Math.min(totalPages, current + 1))
+                }
+                className="page-btn"
+              >
+                Next
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* overlays */}
-      <Edit open={!!editItem} item={editItem} onClose={() => setEditItem(null)} onSave={handleSave} />
-      <View open={!!viewItem} item={viewItem} onClose={() => setViewItem(null)} />
+      <SessionEditModal
+        key={editItem?._id || editItem?.id}
+        open={!!editItem}
+        item={editItem}
+        onClose={() => setEditItem(null)}
+        onSave={async (payload) => {
+          const id = editItem._id || editItem.id;
+          await updateMutation.mutateAsync({ id, payload });
+          setEditItem(null);
+        }}
+      />
 
-      <Confirm open={confirm.open} onCancel={() => setConfirm({ open: false, id: null })} onConfirm={confirmDelete} title="Delete interview" message="Are you sure you want to delete this interview? This action cannot be undone." confirmLabel="Delete" />
+      <SessionViewModal
+        key={viewItem?._id || viewItem?.id}
+        open={!!viewItem}
+        item={viewItem}
+        onClose={() => setViewItem(null)}
+      />
 
-      <ActionsMenu open={menu.open} anchorRect={menu.rect} onClose={() => setMenu({ open: false, id: null, rect: null })} onAction={onMenuAction} />
+      <ConnectModal
+        isOpen={isConnectOpen}
+        onClose={() => {
+          setIsConnectOpen(false);
+          setConnectItem(null);
+        }}
+        onBack={() => setIsConnectOpen(false)}
+        language={connectItem?.raw?.language || "English"}
+        aiModel={connectItem?.raw?.aiModel || "GPT-4.1 (Smarter)"}
+        company={connectItem?.raw?.company}
+        position={connectItem?.raw?.position}
+        onActivate={handleConnectActivate}
+      />
 
-      {/* click outside to close menu */}
-      {menu.open && <div onClick={() => setMenu({ open: false, id: null, rect: null })} className="fixed inset-0 z-40" />}
-    </div>
+      <Confirm
+        open={confirm.open}
+        onCancel={() => setConfirm({ open: false, id: null })}
+        onConfirm={confirmDelete}
+        title="Delete interview"
+        message="Are you sure you want to delete this interview? This action cannot be undone."
+        confirmLabel={deleting ? "Deleting..." : "Delete"}
+        disabled={deleting}
+      />
+    </>
   );
 }

@@ -1,162 +1,111 @@
-// Layout.jsx
 import React, { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 import UploadModal from "../Components/UploadModal";
-import StartSessionModal from "../Components/StartSessionModal";
-import LanguageInstructionsModal from "../Components/LanguageInstructionsModal";
-import ResumeSelectModal from "../Components/ResumeSelectModal";
-import TranscriptSettingsModal from "../Components/TranscriptSettingsModal";
-import ReadyToCreateModal from "../Components/ReadyToCreateModal";
-import ConnectModal from "../Components/ConnectModal";
+import CreateSession from "../Components/CreateSession";
 
 import { Outlet } from "react-router-dom";
+import sessionService from "../Services/sessionService";
+import { uploadToGCS } from "../utils/gcsUpload";
+import { showToast } from "../utils/showToastService";
 
 export default function Layout() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [uploadOpen, setUploadOpen] = useState(false);
-const [isTranscriptOpen, setIsTranscriptOpen] = useState(false);
-const [isConnectOpen, setIsConnectOpen] = useState(false);
 
-  // Session (step 1) modal state
-  const [isSessionOpen, setIsSessionOpen] = useState(false);
+  // ⭐ NEW single modal state
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
 
-  // Language/instructions (step 2) modal state
-  const [isLanguageOpen, setIsLanguageOpen] = useState(false);
+  const [currentSessionId, setCurrentSessionId] = useState(null);
+  const [isSessionActive, setIsSessionActive] = useState(false);
 
-  // Store data from Step 1 so you can show/use it in Step 2
-  const [sessionData, setSessionData] = useState(null);
-
-  const [isResumeOpen, setIsResumeOpen] = useState(false);
-const [isReadyOpen, setIsReadyOpen] = useState(false);
-
-
-  // Prevent body scroll when mobile sidebar is open (only for mobile sizes)
+  /* Prevent body scroll on mobile sidebar */
   useEffect(() => {
     if (isMobileOpen && window.innerWidth < 768) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
     }
-    return () => {
-      document.body.style.overflow = "";
-    };
+    return () => (document.body.style.overflow = "");
   }, [isMobileOpen]);
 
-  return (
-    <div className="flex h-screen w-full overflow-hidden theme-bg">
-      <Sidebar isMobileOpen={isMobileOpen} setIsMobileOpen={setIsMobileOpen} />
+  /* Auto end session when modal closes */
+  useEffect(() => {
+    if (!isCreateOpen && isSessionActive && currentSessionId) {
+      const endSession = async () => {
+        try {
+          await sessionService.endSession(currentSessionId);
+        } catch (error) {
+          console.error("Failed to end session implicitly:", error);
+        }
+      };
+      endSession();
+      setIsSessionActive(false);
+      setCurrentSessionId(null);
+    }
+  }, [isCreateOpen, isSessionActive, currentSessionId]);
 
-      {/* Right Side */}
-      <div className="flex-1 flex flex-col">
+  return (
+    // Unified App Shell based on dashboard.css (--body-bg: #f5f8f7)
+    <div className="flex h-screen w-full overflow-hidden bg-[#f5f8f7] font-['DM_Sans',sans-serif]">
+
+      {/* Mobile Overlay */}
+      {isMobileOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-40 md:hidden transition-opacity"
+          onClick={() => setIsMobileOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <Sidebar
+        isMobileOpen={isMobileOpen}
+        setIsMobileOpen={setIsMobileOpen}
+      />
+
+      {/* Main Right Side */}
+      <div className="flex-1 flex flex-col h-full overflow-hidden relative">
         <Navbar
           setIsMobileOpen={setIsMobileOpen}
           isMobileOpen={isMobileOpen}
           openUpload={() => setUploadOpen(true)}
-          openSession={() => setIsSessionOpen(true)} // open start session
+          openSession={() => setIsCreateOpen(true)}
         />
 
-        <div className="flex-1 overflow-y-auto px-0.5 py-0.5">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
           <Outlet />
-        </div>
+        </main>
       </div>
 
-      {/* Upload Modal */}
+      {/* Upload Resume Modal */}
       <UploadModal
         open={uploadOpen}
         onClose={() => setUploadOpen(false)}
-        onUpload={(file) => {
-          console.log("Uploaded:", file);
-          setUploadOpen(false);
+        onUpload={async ({ file, title }) => {
+          try {
+            const response = await uploadToGCS(file, title);
+            window.dispatchEvent(new Event("resume-updated"));
+            return response;
+          } catch (error) {
+            showToast("error", "Upload failed");
+            throw error;
+          }
         }}
       />
 
-      {/* Start Session Modal (Step 1) */}
-      <StartSessionModal
-        isOpen={isSessionOpen}
-        onClose={() => setIsSessionOpen(false)}
-        onNext={(data) => {
-          // data = { company, jobDescription }
-          setSessionData(data);         // keep step-1 data
-          setIsSessionOpen(false);      // close step-1
-          setIsLanguageOpen(true);      // OPEN step-2
+      {/* Create Session Wizard */}
+      <CreateSession
+        open={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
+        onCreated={(session) => {
+          const sessionId = session?._id || session?.id;
+
+          if (sessionId) {
+            setCurrentSessionId(sessionId);
+            setIsSessionActive(true);
+          }
         }}
       />
-
-      <LanguageInstructionsModal
-  isOpen={isLanguageOpen}
-  onClose={() => setIsLanguageOpen(false)}
-  onBack={() => {
-    setIsLanguageOpen(false);
-    setIsSessionOpen(true);
-  }}
-  onNext={() => {
-    setIsLanguageOpen(false);
-    setIsResumeOpen(true);
-  }}
-/>
-
-<ResumeSelectModal
-  isOpen={isResumeOpen}
-  onClose={() => setIsResumeOpen(false)}
-  onBack={() => {
-    setIsResumeOpen(false);
-    setIsLanguageOpen(true);
-  }}
-onNext={(resumeData) => {
-  console.log("Selected Resume Data:", resumeData);
-  setIsResumeOpen(false);
-  setIsTranscriptOpen(true);   // <-- OPEN Transcript popup
-}}
-
-/>
-
-<TranscriptSettingsModal
-  isOpen={isTranscriptOpen}
-  onClose={() => setIsTranscriptOpen(false)}
-  onBack={() => {
-    setIsTranscriptOpen(false);
-    setIsResumeOpen(true);
-  }}
-  onNext={(data) => {
-   
-    setIsTranscriptOpen(false);
-    setIsReadyOpen(true);   
-  }}
-/>
-
-
-<ReadyToCreateModal
-  isOpen={isReadyOpen}
-  onClose={() => setIsReadyOpen(false)}
-  onBack={() => {
-    setIsReadyOpen(false);
-    setIsTranscriptOpen(true);
-  }}
-  onCreate={() => {
-    setIsReadyOpen(false);
-    setIsConnectOpen(true);   // ← NEW POPUP OPENS
-  }}
-/>
-
-
-<ConnectModal
-  isOpen={isConnectOpen}
-  onClose={() => setIsConnectOpen(false)}
-  onBack={() => {
-    setIsConnectOpen(false);
-    setIsReadyOpen(true);
-  }}
-  language="English"
-  aiModel="GPT-4.1 (Smarter)"
-  onActivate={() => {
-    console.log("Session Activated!");
-    setIsConnectOpen(false);
-  }}
-/>
-
-
-
     </div>
   );
 }

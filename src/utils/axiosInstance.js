@@ -1,7 +1,9 @@
 import axios from "axios";
+import { getApiBaseUrl } from "./apiUrl";
+import { authTrace, describeToken } from "./authTrace";
 
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "https://34.54.116.200.nip.io/api",
+  baseURL: getApiBaseUrl(),
   withCredentials: true, // ✅ required if you ever use cookies
 });
 
@@ -12,9 +14,38 @@ axiosInstance.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    authTrace("api request", {
+      method: config.method,
+      baseURL: config.baseURL,
+      url: config.url,
+      token: describeToken(token),
+    });
+
     return config;
   },
   (error) => Promise.reject(error)
+);
+
+axiosInstance.interceptors.response.use(
+  (response) => {
+    authTrace("api response", {
+      method: response.config?.method,
+      url: response.config?.url,
+      status: response.status,
+    });
+    return response;
+  },
+  (error) => {
+    authTrace("api error", {
+      method: error?.config?.method,
+      url: error?.config?.url,
+      status: error?.response?.status,
+      data: error?.response?.data,
+      message: error?.message,
+    });
+    return Promise.reject(error);
+  }
 );
 
 export default axiosInstance;

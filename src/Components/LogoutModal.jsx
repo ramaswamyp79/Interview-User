@@ -1,76 +1,110 @@
-import React from "react";
-import { motion } from "framer-motion";
-import { X } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useAuth0 } from "@auth0/auth0-react";
+import { LogOut, X } from "lucide-react";
 
 export default function LogoutModal({ close }) {
-  const navigate = useNavigate();
   const { logout } = useAuth0();
+  const [loggingOut, setLoggingOut] = useState(false);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("interview_email");
-    sessionStorage.removeItem("interview_email");
-    logout({
-      logoutParams: {
-        returnTo: window.location.origin + "/login",
-      },
-    });
-    close();
+  useEffect(() => {
+    const handleEscape = (event) => {
+      if (event.key === "Escape" && !loggingOut) {
+        close?.();
+      }
+    };
+
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [close, loggingOut]);
+
+  const handleClose = () => {
+    if (loggingOut) return;
+    close?.();
   };
 
-  return (
-    <div className="
-      fixed inset-0 bg-black/60 backdrop-blur-md 
-      flex items-center justify-center z-[200]
-    ">
-      <motion.div
-        initial={{ scale: 0.85, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        className="
-          bg-white w-[90%] max-w-md p-6 rounded-2xl relative
-        "
+  const handleLogout = () => {
+    if (loggingOut) return;
+
+    setLoggingOut(true);
+    localStorage.removeItem("token");
+
+    logout({
+      logoutParams: {
+        returnTo: `${window.location.origin}/login`,
+      },
+    });
+
+    close?.();
+  };
+
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
+    <div
+      className="confirm-modal-overlay"
+      role="presentation"
+      onClick={handleClose}
+    >
+      <div
+        className="confirm-modal-box"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="logout-modal-title"
+        onClick={(event) => event.stopPropagation()}
       >
-        {/* Close Icon */}
         <button
-          className="absolute top-3 right-3 p-1 rounded-full hover:bg-white/40"
-          onClick={close}
+          type="button"
+          className="confirm-close-btn"
+          onClick={handleClose}
+          disabled={loggingOut}
+          aria-label="Close logout confirmation"
         >
-          <X size={20} />
+          <X />
         </button>
 
-        <h2 className="text-xl font-semibold theme-text">
-          Confirm Logout
-        </h2>
+        <div className="confirm-modal-body">
+          <div className="confirm-icon-wrap">
+            <LogOut />
+          </div>
 
-        <p className="mt-3 text-gray-700">
-          Are you sure you want to logout?
-        </p>
+          <h3 id="logout-modal-title" className="confirm-modal-title">
+            Confirm Logout
+          </h3>
 
-        <div className="mt-6 flex gap-3">
-          <button
-            onClick={close}
-            className="
-              flex-1 py-2 rounded-xl glass 
-              text-gray-700 font-medium shadow
-            "
-          >
-            Cancel
-          </button>
+          <p className="confirm-message">
+            Are you sure you want to logout? You will need to sign in again to
+            continue using AnswerFlow AI.
+          </p>
 
-          <button
-            onClick={handleLogout}
-            className="
-              flex-1 py-2 rounded-xl 
-              bg-red-500 text-white font-semibold shadow
-              hover:scale-[1.03] transition
-            "
-          >
-            Logout
-          </button>
+          <div className="confirm-actions">
+            <button
+              type="button"
+              onClick={handleClose}
+              className="btn-cancel-soft"
+              disabled={loggingOut}
+            >
+              Cancel
+            </button>
+
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="btn-confirm-danger"
+              disabled={loggingOut}
+            >
+              {loggingOut && (
+                <span className="confirm-btn-spinner" aria-hidden="true" />
+              )}
+              {loggingOut ? "Logging out..." : "Logout"}
+            </button>
+          </div>
         </div>
-      </motion.div>
-    </div>
+      </div>
+    </div>,
+    document.body
   );
 }

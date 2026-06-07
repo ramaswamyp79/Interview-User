@@ -1,17 +1,11 @@
 import { Navigate, Outlet } from "react-router-dom";
+import { authTrace, decodeJwtPayload, describeToken } from "../utils/authTrace";
 
 function isTokenValid(token) {
   if (!token) return false;
 
   try {
-    const payload = token.split(".")[1];
-    if (!payload) return false;
-
-    let base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
-    const pad = base64.length % 4;
-    if (pad) base64 += "=".repeat(4 - pad);
-
-    const decoded = JSON.parse(atob(base64));
+    const decoded = decodeJwtPayload(token);
     return decoded.exp * 1000 > Date.now();
   } catch {
     return false;
@@ -20,9 +14,19 @@ function isTokenValid(token) {
 
 const PublicOnlyRoute = () => {
   const token = localStorage.getItem("token");
+  const valid = isTokenValid(token);
 
+  authTrace("public route check", {
+    path: window.location.pathname,
+    token: describeToken(token),
+    valid,
+  });
 
-  if (isTokenValid(token)) {
+  if (valid) {
+    authTrace("public route redirect", {
+      from: window.location.pathname,
+      to: "/home",
+    });
     return <Navigate to="/home" replace />;
   }
 

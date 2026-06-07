@@ -2,6 +2,7 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { socialLogin } from "../Services/authService";
+import { authTrace, describeToken } from "../utils/authTrace";
 
 const AuthCallback = () => {
   const { user, isAuthenticated, isLoading } = useAuth0();
@@ -9,8 +10,20 @@ const AuthCallback = () => {
   const hasCalled = useRef(false);
 
   useEffect(() => {
+    authTrace("callback state", {
+      isLoading,
+      isAuthenticated,
+      hasUser: Boolean(user),
+      hasCalled: hasCalled.current,
+      path: window.location.pathname,
+      search: window.location.search,
+    });
+
     if (isLoading || !isAuthenticated || !user) return;
-    if (hasCalled.current) return;
+    if (hasCalled.current) {
+      authTrace("callback skipped duplicate effect");
+      return;
+    }
 
     hasCalled.current = true;
 
@@ -23,18 +36,34 @@ const AuthCallback = () => {
       providerId: user.sub,
     };
 
+    authTrace("callback social login request", {
+      provider,
+      providerId: user.sub,
+      email: user.email,
+      name: user.name,
+    });
+
     socialLogin(payload)
       .then((res) => {
-        // ✅ IMPORTANT: backend returns data directly
+        authTrace("callback social login success", {
+          token: describeToken(res?.token),
+          user: res?.user,
+        });
+
         localStorage.setItem("token", res.token);
-        // Keep email available across reconnects and session refreshes.
-        if (user?.email) {
-          localStorage.setItem("interview_email", user.email);
-          sessionStorage.setItem("interview_email", user.email);
-        }
+        localStorage.setItem("email", res.user.email);
+        localStorage.setItem("user", JSON.stringify(res.user));
+
+        authTrace("callback navigate", { to: "/home" });
         navigate("/home", { replace: true });
       })
-      .catch(() => {
+      .catch((error) => {
+        authTrace("callback social login failed", {
+          message: error?.message,
+          status: error?.response?.status,
+          data: error?.response?.data,
+        });
+        authTrace("callback navigate", { to: "/login" });
         navigate("/login", { replace: true });
       });
   }, [isAuthenticated, isLoading, user, navigate]);

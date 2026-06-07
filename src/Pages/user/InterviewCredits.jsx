@@ -1,6 +1,17 @@
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ShoppingCart, Coins, CreditCard } from "lucide-react";
+import React, { useMemo, useState } from "react";
+import { motion } from "framer-motion";
+import {
+  ArrowRight,
+  Check,
+  Coins,
+  CreditCard,
+  Gift,
+  HelpCircle,
+  ShieldCheck,
+  Tag,
+  TimerReset,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { buyCredits } from "../../Services/paymentService";
 import PreStripeModal from "../../Components/PreStripeModal";
 import ConfirmPlanModal from "../../Components/ConfirmPlanModal";
@@ -9,36 +20,35 @@ const plansRow1 = [
   {
     id: "basic",
     title: "Basic",
-    priceINR: "2,650",
+    priceINR: "2,450",
     priceUSD: "$29.50",
     credits: 3,
     free: 0,
-    dots: { rows: 1, cols: 3, yellow: 0 },
+    popular: false,
     cta: "Buy credit",
   },
   {
     id: "plus",
     title: "Plus",
-    priceINR: "5,300",
-    priceUSD: "$59.00",
+    priceINR: "4,500",
+    priceUSD: "$50.00",
     credits: 6,
-    free: 2,
-    dots: { rows: 2, cols: 3, yellow: 2 },
+    free: 0,
+    popular: true,
     cta: "Buy credit",
   },
   {
     id: "advanced",
     title: "Advanced",
     priceINR: "7,950",
-    priceUSD: "$88.50",
-    credits: 9,
-    free: 6,
-    dots: { rows: 3, cols: 3, yellow: 6 },
+    priceUSD: "$78.50",
+    credits: 6,
+    free: 3,
+    popular: false,
     cta: "Buy credit",
   },
 ];
 
-// second row - custom plans (you said make your own plans)
 const plansRow2 = [
   {
     id: "starter",
@@ -47,395 +57,390 @@ const plansRow2 = [
     priceUSD: "$16.00",
     credits: 1,
     free: 0,
-    dots: { rows: 1, cols: 1, yellow: 0 },
+    popular: false,
     cta: "Buy Credit",
   },
   {
     id: "pro",
     title: "Pro",
-    priceINR: "10,900",
+    priceINR: "10,500",
     priceUSD: "$121.50",
     credits: 12,
-    free: 6,
-    dots: { rows: 4, cols: 3, yellow: 6 },
+    free: 0,
+    popular: false,
     cta: "Buy Credit",
   },
   {
     id: "enterprise",
     title: "Enterprise",
-    priceINR: "19,500",
+    priceINR: "18,500",
     priceUSD: "$217.00",
     credits: 20,
-    free: 10,
-    dots: { rows: 5, cols: 4, yellow: 10 },
+    free: 0,
+    popular: false,
     cta: "Contact",
+    isContactPlan: true,
   },
 ];
 
-const OfferBar = () => {
-  return (
-    <div className="w-full">
-      <div
-        className="w-full max-w-full rounded-b-2xl py-3 px-4 md:px-6 text-center shadow-lg"
-        style={{ background: "linear-gradient(90deg, #fff7ed, #fff3e0)" }}
-      >
-        <div className="inline-flex items-center gap-4">
-          <span className="text-sm md:text-base font-medium text-orange-600">🔥</span>
-          <span className="text-sm md:text-base">Special offer for</span>
-          <span className="text-sm md:text-base font-extrabold italic text-orange-800">IN India</span>
-          <span className="text-sm md:text-base">users: Use code</span>
-          <span className="px-2 py-1 rounded-md font-semibold text-white bg-orange-500 tracking-wider">
-            INDIA25
-          </span>
-          <span className="text-sm md:text-base font-semibold text-orange-700">for 25% off!</span>
-        </div>
-      </div>
-    </div>
-  );
+const fadeUp = {
+  initial: { opacity: 0, y: 14 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.3, ease: "easeOut" },
 };
 
-const DotGrid = ({ rows = 1, cols = 3, yellow = 0 }) => {
-  const total = rows * cols;
-  const dots = Array.from({ length: total }).map((_, i) => ({ idx: i }));
+const CheckBadge = ({ children }) => (
+  <div className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--text-mid)] sm:text-sm">
+    <Check className="h-3.5 w-3.5 shrink-0 text-[var(--teal)]" />
+    <span>{children}</span>
+  </div>
+);
 
-  return (
-    <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
-      {dots.map((d, i) => {
-        const isYellow = i < yellow;
-        return (
-          <div
-            key={i}
-            className={`w-[10px] h-[10px] rounded-full ${isYellow ? "bg-yellow-400" : "bg-gray-800"}`}
-          />
-        );
-      })}
-    </div>
-  );
-};
-
-const PlanCard = ({ plan, isSelected, onSelect, onBuy }) => {
+const PromoBanner = () => {
   return (
     <motion.div
-      layout
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ scale: 1.02 }}
-      onClick={() => onSelect(plan.id)}
-      className={`relative cursor-pointer p-5 rounded-2xl border-2
-    flex flex-col h-full
-    ${isSelected ? "ring-4 ring-indigo-200 bg-white/80" : "hover-faint-gradient"}
-  `}
+      {...fadeUp}
+      className="mb-7 flex flex-wrap items-center justify-center gap-2 rounded-lg border px-4 py-3 text-center text-sm font-medium shadow-sm sm:justify-start sm:px-5"
+      style={{
+        backgroundColor: "var(--teal-light)",
+        borderColor: "var(--teal-mid)",
+        color: "var(--text-mid)",
+      }}
     >
+      <Tag className="h-4 w-4 shrink-0 text-[var(--teal)]" />
 
-      {/* Top content */}
-      <div className="flex items-start gap-4">
-        {/* <div className="flex-shrink-0">
-          <div className="w-6 h-6 flex items-center justify-center bg-indigo-50 rounded-full">
-            <ShoppingCart className="w-4 h-4 text-indigo-600" />
-          </div>
-        </div> */}
+      <span>Special offer for</span>
 
-        <div className="flex-1">
-          {/* Title + Price */}
-          <div className="flex items-center justify-between gap-3">
-            <h4 className="text-lg font-semibold text-gray-900">{plan.title}</h4>
+      <strong className="font-bold text-[var(--text-dark)]">IN India</strong>
 
-            <div className="text-right">
-              <div className="text-base text-gray-800">₹{plan.priceINR}</div>
-              <div className="text-sm text-gray-700">({plan.priceUSD})</div>
-            </div>
-          </div>
+      <span>users! Use code</span>
 
-          {/* Dot grid + credits */}
-          <div className="mt-3 flex items-center justify-between">
-            {/* LEFT — ALWAYS Left aligned dots */}
-            <div className="w-16 scale-[0.7]">
-              <DotGrid
-                rows={plan.dots.rows}
-                cols={plan.dots.cols}
-                yellow={plan.dots.yellow}
-              />
-            </div>
+      <span className="rounded-md bg-[var(--teal)] px-2.5 py-1 text-xs font-bold tracking-wide text-white">
+        INDA25
+      </span>
 
-            {/* RIGHT — Interview credits */}
-            <div className="text-sm text-gray-800 text-right">
-              <span className="font-semibold text-indigo-600">{plan.credits}</span>
-              <span className="ml-1"> Interview Credit{plan.credits > 1 ? "s" : ""}</span>
-
-              {plan.free > 0 && (
-                <div className="text-sm text-yellow-700 font-semibold">
-                  + {plan.free} Free
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-      {/* Bottom Section */}
-      <div className="mt-auto pt-4 flex items-center justify-between">
-        <div className="text-sm text-gray-600">
-          {plan.credits} credits • One-time
-        </div>
-
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onBuy(plan);
-          }}
-          className={`px-3 py-1.5 rounded-lg font-semibold text-sm transition shadow-md
-      ${isSelected
-              ? "bg-white text-indigo-700 border border-indigo-200"
-              : "theme-primary"}
-    `}
-        >
-          {plan.cta} →
-        </button>
-      </div>
-
+      <span>for 25% off!</span>
     </motion.div>
   );
 };
 
-
-const InfoPlate = () => {
+const PricingHeader = () => {
   return (
-    <div className="mt-6 p-4 rounded-xl glass flex items-center justify-between gap-4 border">
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">🔁</div>
-          <div>
-            <div className="text-sm font-semibold">30-Day Money Back</div>
+    <motion.div
+      {...fadeUp}
+      transition={{ duration: 0.3, delay: 0.04, ease: "easeOut" }}
+      className="mb-7 text-center"
+    >
+      <div className="mb-2 text-xs font-bold uppercase tracking-widest text-[var(--teal)]">
+        Pricing
+      </div>
+
+      <h1 className="mb-2 font-body text-3xl font-bold text-[var(--text-dark)]">
+        No Subscription
+      </h1>
+
+      <p className="mb-3 text-sm text-[var(--text-mid)]">One-time payment</p>
+
+      <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-5">
+        <CheckBadge>30-Day Money Back</CheckBadge>
+        <CheckBadge>Credits Never Expire</CheckBadge>
+        <CheckBadge>1 Credit = 1 Interview</CheckBadge>
+      </div>
+    </motion.div>
+  );
+};
+
+const PlanCard = ({ plan, selected, disabled, onSelect, onBuy }) => {
+  const totalCredits = plan.credits + plan.free;
+
+  return (
+    <motion.div
+      layout
+      {...fadeUp}
+      whileHover={{ y: -3 }}
+      onClick={() => onSelect(plan.id)}
+      className={`relative flex h-full cursor-pointer flex-col rounded-2xl border bg-white px-5 py-6 shadow-sm transition-all duration-200 ${
+        selected ? "shadow-lg ring-2 ring-[var(--teal)]" : "hover:shadow-lg"
+      }`}
+      style={{
+        borderColor: selected || plan.popular ? "var(--teal)" : "var(--border)",
+      }}
+    >
+      {plan.popular && (
+        <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--teal)] px-4 py-1 text-xs font-bold tracking-wide text-white shadow-sm">
+          Popular
+        </div>
+      )}
+
+      <div className="mb-3 flex items-start justify-between gap-4">
+        <div>
+          <h3 className="text-base font-bold text-[var(--text-dark)]">
+            {plan.title}
+          </h3>
+
+          <div className="mt-1 flex items-center gap-1.5 text-xs text-[var(--text-light)]">
+            <CreditCard className="h-3.5 w-3.5" />
+            <span>One-time</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">⏳</div>
-          <div className="text-sm">Credits Never Expire</div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">🪙</div>
-          <div className="text-sm">1 Credit = 1h Interview</div>
+        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[var(--teal-light)] text-[var(--teal)]">
+          {plan.free > 0 ? (
+            <Gift className="h-5 w-5" />
+          ) : (
+            <Coins className="h-5 w-5" />
+          )}
         </div>
       </div>
 
-      <div className="text-sm text-indigo-700 font-semibold">→</div>
-    </div>
+      <div className="mb-3 flex items-baseline gap-2">
+        <span className="text-2xl font-bold text-[var(--text-dark)]">
+          ₹{plan.priceINR}
+        </span>
+
+        <span className="text-sm text-[var(--text-light)] line-through">
+          {plan.priceUSD}
+        </span>
+      </div>
+
+      <div className="mb-1 text-sm font-semibold text-[var(--text-dark)]">
+        {plan.free > 0
+          ? `${plan.credits} Interview Credits + ${plan.free} Free`
+          : `${plan.credits} Interview Credit${plan.credits > 1 ? "s" : ""}`}
+      </div>
+
+      <div className="mb-5 text-xs text-[var(--text-light)]">
+        {totalCredits} total credit{totalCredits > 1 ? "s" : ""} • One-time
+      </div>
+
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={(event) => {
+          event.stopPropagation();
+          onBuy(plan);
+        }}
+        className={`mt-auto inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-bold transition-all disabled:cursor-not-allowed disabled:opacity-60 ${
+          plan.isContactPlan
+            ? "border-2 border-[var(--teal)] bg-white text-[var(--teal)] hover:bg-[var(--teal-light)]"
+            : "bg-[var(--teal)] text-white hover:bg-[var(--teal-dark)]"
+        }`}
+      >
+        <span>{disabled ? "Please wait..." : plan.cta}</span>
+        <ArrowRight className="h-4 w-4" />
+      </button>
+    </motion.div>
+  );
+};
+
+const SplitInfo = () => {
+  return (
+    <motion.div
+      {...fadeUp}
+      transition={{ duration: 0.3, delay: 0.08, ease: "easeOut" }}
+      className="mb-6 rounded-2xl border bg-white px-4 py-4 text-center shadow-sm"
+      style={{ borderColor: "var(--border)" }}
+    >
+      <div className="flex flex-col items-center justify-center gap-2 sm:flex-row">
+        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[var(--teal-light)] text-[var(--teal)]">
+          <TimerReset className="h-5 w-5" />
+        </div>
+
+        <div>
+          <strong className="block text-sm font-bold text-[var(--text-dark)]">
+            You can split credits into 30-minute sessions.
+          </strong>
+
+          <span className="mt-1 block text-xs text-[var(--text-light)]">
+            Use one credit for a full interview session or split into 2 slots.
+            Each slot is 30 minutes.
+          </span>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+const BottomHelpCard = ({ selectedPlan, onBuySelected, onContact, disabled }) => {
+  return (
+    <motion.div
+      {...fadeUp}
+      transition={{ duration: 0.3, delay: 0.12, ease: "easeOut" }}
+      className="mt-2 flex flex-col items-start justify-between gap-4 rounded-2xl border bg-white/80 p-5 shadow-sm backdrop-blur md:flex-row md:items-center"
+      style={{ borderColor: "var(--border)" }}
+    >
+      <div className="flex items-start gap-3">
+        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[var(--teal-light)] text-[var(--teal)]">
+          <HelpCircle className="h-5 w-5" />
+        </div>
+
+        <div>
+          <h3 className="text-base font-bold text-[var(--text-dark)]">
+            Ready to buy credits?
+          </h3>
+
+          <p className="mt-1 text-sm text-[var(--text-mid)]">
+            Selected plan:{" "}
+            <span className="font-bold text-[var(--text-dark)]">
+              {selectedPlan ? selectedPlan.title : "None"}
+            </span>
+          </p>
+        </div>
+      </div>
+
+      <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+        <button
+          type="button"
+          disabled={!selectedPlan || disabled || selectedPlan?.isContactPlan}
+          onClick={onBuySelected}
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--teal)] px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[var(--teal-dark)] disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Buy Selected Plan
+          <ArrowRight className="h-4 w-4" />
+        </button>
+
+        <button
+          type="button"
+          onClick={onContact}
+          className="inline-flex items-center justify-center gap-2 rounded-lg border-2 bg-white px-4 py-2.5 text-sm font-bold text-[var(--text-dark)] transition-colors hover:border-[var(--teal)] hover:text-[var(--teal)]"
+          style={{ borderColor: "var(--border)" }}
+        >
+          Contact Support
+        </button>
+      </div>
+    </motion.div>
   );
 };
 
 const InterviewCredits = () => {
-  const [selected, setSelected] = useState(null);
-  const [activePlan, setActivePlan] = useState(null); // ✅ holds plan object
+  const navigate = useNavigate();
+
+  const [activePlan, setActivePlan] = useState(null);
+  const [selectedPlanId, setSelectedPlanId] = useState(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const [showStripePrep, setShowStripePrep] = useState(false);
   const [isPaying, setIsPaying] = useState(false);
 
-  const [selectedPlanId, setSelectedPlanId] = useState(null); // visual selection
+  const allPlans = useMemo(() => [...plansRow1, ...plansRow2], []);
 
+  const selectedPlan = useMemo(
+    () => allPlans.find((plan) => plan.id === selectedPlanId) || null,
+    [allPlans, selectedPlanId]
+  );
+
+  const openPaymentFlow = (plan) => {
+    if (!plan || isPaying) return;
+
+    setSelectedPlanId(plan.id);
+
+    if (plan.isContactPlan) {
+      navigate("/support");
+      return;
+    }
+
+    setActivePlan(plan);
+    setShowConfirm(true);
+  };
+
+  const closeConfirm = () => {
+    if (isPaying) return;
+    setShowConfirm(false);
+  };
+
+  const confirmPlan = () => {
+    setShowConfirm(false);
+    setShowStripePrep(true);
+  };
+
+  const closeStripePrep = () => {
+    if (isPaying) return;
+    setShowStripePrep(false);
+    setActivePlan(null);
+  };
+
+  const handleStripeBack = () => {
+    if (isPaying) return;
+    setShowStripePrep(false);
+    setShowConfirm(true);
+  };
+
+  const handlePay = async () => {
+    if (!activePlan || isPaying) return;
+
+    try {
+      setIsPaying(true);
+
+      await buyCredits({
+        title: activePlan.title,
+        amount: Number(String(activePlan.priceINR).replace(/,/g, "")),
+        credits: activePlan.credits + activePlan.free,
+      });
+    } catch (error) {
+      console.error("Failed to start payment:", error);
+      setIsPaying(false);
+    }
+  };
 
   return (
     <>
       {showConfirm && activePlan && (
         <ConfirmPlanModal
           plan={activePlan}
-          onClose={() => setShowConfirm(false)}
-          onConfirm={() => {
-            setShowConfirm(false);
-            setShowStripePrep(true);
-          }}
+          onClose={closeConfirm}
+          onConfirm={confirmPlan}
         />
       )}
 
       {showStripePrep && activePlan && (
         <PreStripeModal
           plan={activePlan}
-          onPay={() => {
-            setIsPaying(true);
-            buyCredits({
-              title: activePlan.title,
-              amount: Number(activePlan.priceINR.replace(",", "")),
-              credits: activePlan.credits + activePlan.free,
-            });
-          }}
-          onBack={() => {
-            setShowStripePrep(false);
-            setShowConfirm(true);
-          }}
-          onClose={() => {
-            setShowStripePrep(false);
-            setActivePlan(null);
-          }}
+          onPay={handlePay}
+          onBack={handleStripeBack}
+          onClose={closeStripePrep}
+          loading={isPaying}
+          isPaying={isPaying}
         />
       )}
 
+      <div className="content font-body">
+        <PromoBanner />
 
+        <PricingHeader />
 
-      <div className="relative w-full theme-bg ">{/* pt-20 to offset fixed offer bar */}
-        <div className="sticky top-0 z-30">
-          <OfferBar />
+        <div className="mb-6 grid grid-cols-1 gap-5 lg:grid-cols-3">
+          {plansRow1.map((plan) => (
+            <PlanCard
+              key={plan.id}
+              plan={plan}
+              selected={selectedPlanId === plan.id}
+              disabled={isPaying}
+              onSelect={setSelectedPlanId}
+              onBuy={openPaymentFlow}
+            />
+          ))}
         </div>
 
-        <div className="mx-auto max-w-6xl px-4 md:px-6">
-          {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35 }}
-            className="text-center mt-6"
-          >
-            <div className="text-sm uppercase tracking-wider text-gray-500">PRICING</div>
-            <h1 className="text-2xl md:text-4xl font-semibold mt-2">
-              <span className="font-semibold">No Subscription</span>
-            </h1>
-            <p className="text-sm text-gray-600 mt-2 flex items-center justify-center gap-2">
-              <span className="text-lg">🔰</span>
-              <span>One-time payment</span>
-            </p>
-          </motion.div>
+        <SplitInfo />
 
-          {/* Gray-100 Plate */}
-          <motion.div
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05 }}
-            className="mt-6 p-4 rounded-xl bg-gray-100 border border-gray-200"
-          >
-            <div className="max-w-4xl mx-auto w-full">
-
-              <div className="flex flex-col md:flex-row items-center justify-between w-full">
-
-                {/* --- POINTS ROW --- */}
-                <div className="flex w-full items-center justify-between">
-
-                  {/* Point 1 */}
-                  <div className="flex items-center gap-3 w-full justify-center">
-                    <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center">🔁</div>
-                    <div className="text-sm">30-Day Money Back</div>
-                  </div>
-
-                  {/* Divider */}
-                  <div className="hidden md:block w-px h-10 bg-gray-300"></div>
-
-                  {/* Point 2 */}
-                  <div className="flex items-center gap-3 w-full justify-center">
-                    <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center opacity-60">⌚</div>
-                    <div className="text-sm">Credits Never Expire</div>
-                  </div>
-
-                  {/* Divider */}
-                  <div className="hidden md:block w-px h-10 bg-gray-300"></div>
-
-                  {/* Point 3 */}
-                  <div className="flex items-center gap-3 w-full justify-center">
-                    <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center">🪙</div>
-                    <div className="text-sm">1 Credit = 1h Interview</div>
-                  </div>
-
-                </div>
-              </div>
-
-            </div>
-          </motion.div>
-
-
-          {/* First Row (3 cards) */}
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-            {plansRow1.map((p) => (
-              <PlanCard
-                key={p.id}
-                plan={p}
-                isSelected={selectedPlanId === p.id}
-                onSelect={setSelectedPlanId}
-                onBuy={(plan) => {
-                  setActivePlan(plan);
-                  setShowConfirm(true);
-                }}
-              />
-            ))}
-
-          </div>
-
-
-
-          {/* Split credits plate */}
-          <motion.div
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05 }}
-            className="mt-6 p-4 rounded-xl bg-white border border-gray-200 
-             flex items-center justify-center min-h-[90px] text-center"
-          >
-            <div className="flex items-center gap-3 justify-center">
-
-              <div className="w-8 h-8 rounded-md bg-indigo-50 flex items-center justify-center">[|]</div>
-
-              <div className="flex flex-col justify-center">
-                <div className="text-sm font-semibold leading-tight">
-                  You can split credits into 30-minute sessions.
-                </div>
-                <div className="text-xs text-gray-500 leading-tight">
-                  Use one credit for a 60-min interview or split into two 30-min interviews.
-                </div>
-              </div>
-
-            </div>
-          </motion.div>
-
-
-          {/* Second Row (3 cards) */}
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-            {plansRow2.map((p) => (
-              <PlanCard
-                key={p.id}
-                plan={p}
-                isSelected={selectedPlanId === p.id}
-                onSelect={setSelectedPlanId}
-                onBuy={(plan) => {
-                  setActivePlan(plan);
-                  setShowConfirm(true);
-                }}
-              />
-            ))}
-
-          </div>
-
-          {/* CTA area */}
-          <motion.div
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.08 }}
-            className="mt-8 rounded-xl p-6 glass-card border flex flex-col md:flex-row items-center justify-between gap-4"
-          >
-            <div>
-              <div className="text-lg font-semibold">Ready to buy credits?</div>
-              <div className="text-sm text-gray-600">
-                Selected plan: {selectedPlanId ? selectedPlanId.toUpperCase() : "None"}
-              </div>
-
-            </div>
-
-            <div className="flex items-center gap-3">
-              <button
-                disabled={!selectedPlanId}
-                onClick={() => {
-                  const plan = [...plansRow1, ...plansRow2].find(
-                    (p) => p.id === selectedPlanId
-                  );
-                  setActivePlan(plan);
-                  setShowConfirm(true);
-                }}
-                className={`px-4 py-2 rounded-lg font-semibold
-    ${!selectedPlanId ? "opacity-50 cursor-not-allowed" : "theme-primary"}
-  `}
-              >
-                Buy Selected Plan
-              </button>
-
-              <button className="px-4 py-2 rounded-lg border">Contact Support</button>
-            </div>
-          </motion.div>
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+          {plansRow2.map((plan) => (
+            <PlanCard
+              key={plan.id}
+              plan={plan}
+              selected={selectedPlanId === plan.id}
+              disabled={isPaying}
+              onSelect={setSelectedPlanId}
+              onBuy={openPaymentFlow}
+            />
+          ))}
         </div>
+
+        <BottomHelpCard
+          selectedPlan={selectedPlan}
+          disabled={isPaying}
+          onBuySelected={() => openPaymentFlow(selectedPlan)}
+          onContact={() => navigate("/support")}
+        />
       </div>
     </>
   );

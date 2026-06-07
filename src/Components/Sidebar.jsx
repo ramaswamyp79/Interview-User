@@ -1,309 +1,340 @@
-import React, { useState, useEffect, useRef } from "react";
-import Tooltip from "./Tooltip.jsx";
-import { NavLink, useNavigate } from "react-router-dom";
-import { LogOut } from "lucide-react";
-import {
-  Home,
-  User,
-  FileText,
-  Download,
-  Mail,
-  ChevronLeft,
-  ChevronRight
-} from "lucide-react";
-import { motion } from "framer-motion";
-import LogoutModal from "./LogoutModal.jsx";
-export default function Sidebar({ isMobileOpen, setIsMobileOpen }) {
-  const [isOpen, setIsOpen] = useState(true);
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth); // ✅ track width
-  const iconRef = useRef(null);
-  const [hovered, setHovered] = useState(false);
-  const [showLogout, setShowLogout] = useState(false);
+import React, { useEffect, useMemo, useState } from "react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import LogoutModal from "../Components/LogoutModal.jsx";
+import { getProfile } from "../Services/userService";
 
-  /* Listen for screen size change */
+import logo from "../assets/logo_AnsweflowAI.jpg.png";
+
+const HomeIcon = () => (
+  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 10L10 3l7 7M5 8.5V17h4v-4h2v4h4V8.5" />
+  </svg>
+);
+
+const SessionsIcon = () => (
+  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="4" width="14" height="14" rx="2" />
+    <path d="M7 8h6M7 12h4" />
+  </svg>
+);
+
+const LiveIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="2" />
+    <path d="M6.34 17.66a8 8 0 010-11.31" />
+    <path d="M17.66 17.66a8 8 0 000-11.31" />
+    <path d="M3.51 20.49a13 13 0 010-16.97" />
+    <path d="M20.49 20.49a13 13 0 000-16.97" />
+  </svg>
+);
+
+const MockIcon = () => (
+  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="14" height="14" rx="2" />
+    <path d="M7 10l2 2 4-4" />
+  </svg>
+);
+
+const ResumeIcon = () => (
+  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="4" y="3" width="12" height="15" rx="2" />
+    <path d="M7 7h6M7 10h6M7 13h4" />
+  </svg>
+);
+
+const DownloadIcon = () => (
+  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M10 14V4M6 10l4 4 4-4" />
+    <path d="M3 16v1a1 1 0 001 1h12a1 1 0 001-1v-1" />
+  </svg>
+);
+
+const MailIcon = () => (
+  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V5z" />
+    <path d="M3 8l7 5 7-5" />
+  </svg>
+);
+
+const CreditIcon = () => (
+  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="5" width="16" height="11" rx="2" />
+    <path d="M2 9h16" />
+  </svg>
+);
+
+const UserIcon = () => (
+  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="10" cy="7" r="3" />
+    <path d="M4 17c0-3.314 2.686-6 6-6s6 2.686 6 6" />
+  </svg>
+);
+
+const LogoutIcon = () => (
+  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M13 10H3M3 10l3-3M3 10l3 3" />
+    <path d="M9 6V4a1 1 0 011-1h6a1 1 0 011 1v12a1 1 0 01-1 1h-6a1 1 0 01-1-1v-2" />
+  </svg>
+);
+
+const CollapseIcon = () => (
+  <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <path d="M13 5L8 10l5 5" />
+  </svg>
+);
+
+export default function Sidebar({ isMobileOpen, setIsMobileOpen }) {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
+  const [credits, setCredits] = useState(() => Number(localStorage.getItem("credits")) || 0);
+  const [profileName, setProfileName] = useState(
+    localStorage.getItem("userName") ||
+      localStorage.getItem("name") ||
+      localStorage.getItem("fullName") ||
+      "User"
+  );
+
+  const menuItems = useMemo(
+    () => [
+      {
+        name: "Home",
+        tooltip: "Home",
+        path: "/home",
+        activePaths: ["/", "/home"],
+        icon: <HomeIcon />,
+      },
+      {
+        name: "Interview Sessions",
+        tooltip: "Interview Sessions",
+        path: "/interview",
+        activePaths: ["/interview", "/sessions"],
+        icon: <SessionsIcon />,
+      },
+      {
+        name: "Live Interview",
+        tooltip: "Live Interview",
+        path: "/live-interview",
+        activePaths: ["/live", "/live-interview", "/answerflow-live-interview"],
+        icon: <LiveIcon />,
+      },
+      {
+        name: "Mock Interview",
+        tooltip: "Mock Interview",
+        path: "/mock",
+        activePaths: ["/mock", "/mock-interview"],
+        icon: <MockIcon />,
+      },
+      {
+        name: "CV / Resume",
+        tooltip: "CV / Resume",
+        path: "/resume",
+        activePaths: ["/resume"],
+        icon: <ResumeIcon />,
+      },
+      {
+        type: "divider",
+      },
+      {
+        name: "Download Desktop App",
+        tooltip: "Download App",
+        path: "/download",
+        activePaths: ["/download"],
+        icon: <DownloadIcon />,
+      },
+      {
+        name: "Email Support",
+        tooltip: "Email Support",
+        path: "/support",
+        activePaths: ["/support"],
+        icon: <MailIcon />,
+      },
+    ],
+    []
+  );
+
   useEffect(() => {
     const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-
       if (window.innerWidth < 768) {
-        setIsOpen(false); // auto close for mobile
+        setIsCollapsed(false);
       } else {
-        setIsOpen(true); // auto open for desktop
-        setIsMobileOpen(false); // close mobile drawer
+        setIsMobileOpen(false);
       }
     };
 
+    handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [setIsMobileOpen]);
 
-  const isMobile = windowWidth < 768;
+  useEffect(() => {
+    const handleCreditsUpdate = (event) => {
+      const newCredits = event.detail?.credits;
 
-  const menuItems = [
-    { name: "Home", icon: <Home size={22} />, path: "/home" },
-    { name: "Interview Sessions", icon: <User size={22} />, path: "/interview" },
-    { name: "CV / Resume", icon: <FileText size={22} />, path: "/resume" },
-    { name: "Download Desktop App", icon: <Download size={22} />, path: "/download" },
-    { name: "Email Support", icon: <Mail size={22} />, path: "/support" },
-  ];
+      if (typeof newCredits === "number") {
+        setCredits(newCredits);
+        localStorage.setItem("credits", String(newCredits));
+      }
+    };
 
+    window.addEventListener("creditsUpdated", handleCreditsUpdate);
+    return () => window.removeEventListener("creditsUpdated", handleCreditsUpdate);
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadProfile = async () => {
+      try {
+        const profile = await getProfile();
+        if (!mounted) return;
+
+        const serverCredits = Number(profile?.credits ?? 0);
+        const serverName =
+          profile?.fullName ||
+          profile?.name ||
+          profile?.user?.fullName ||
+          profile?.user?.name ||
+          profile?.firstName ||
+          "User";
+
+        setCredits(serverCredits);
+        setProfileName(serverName);
+
+        localStorage.setItem("credits", String(serverCredits));
+        localStorage.setItem("userName", serverName);
+      } catch (error) {
+        console.error("Failed to load profile for sidebar:", error);
+      }
+    };
+
+    loadProfile();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const isActiveItem = (item) => {
+    const pathname = location.pathname;
+
+    return item.activePaths?.some((activePath) => {
+      if (activePath === "/") return pathname === "/";
+      return pathname === activePath || pathname.startsWith(`${activePath}/`);
+    });
+  };
+
+  const closeMobileSidebar = () => {
+    if (window.innerWidth < 768) {
+      setIsMobileOpen(false);
+    }
+  };
+
+  const handleProfileClick = () => {
+    closeMobileSidebar();
+    navigate("/profile");
+  };
+
+  const handleGetCredit = () => {
+    closeMobileSidebar();
+    navigate("/buy-credits");
+  };
 
   return (
     <>
-      {/* Mobile Backdrop - Only visible on mobile when sidebar is open */}
-      {isMobile && (
-        <div
-          className={`
-      fixed inset-0 bg-black/60 z-40 
-      transition-opacity duration-300
-      ${isMobileOpen ? "opacity-100 visible" : "opacity-0 invisible"}
-    `}
-          onClick={() => setIsMobileOpen(false)}
-        />
-      )}
-
-      <motion.div
-        initial={{ x: -300 }}
-        animate={{
-          width: isMobile ? 260 : isOpen ? 268 : 80,
-          x: isMobile ? (isMobileOpen ? 0 : -260) : 0,
-        }}
-        transition={{ duration: 0.35, ease: "easeInOut" }}
-        className={`
-    fixed inset-y-0 left-0
-  theme-bg backdrop-blur-xl
-  border-r border-white/40 shadow-xl
-  flex flex-col
-    ${isMobile ? "fixed z-50" : "md:static z-10"} 
-  `}
+      <aside
+        id="sidebar"
+        className={`sidebar ${isCollapsed ? "collapsed" : ""} ${
+          isMobileOpen ? "mobile-open" : ""
+        }`}
       >
+        <div className="sidebar-logo">
+          <div className="logo-mark">
+            <img src={logo} alt="AnswerFlow AI" />
+          </div>
 
-        {/* Collapse Button */}
-        <button
-          onClick={() => (isMobile ? setIsMobileOpen(false) : setIsOpen(!isOpen))}
-          className="
-     hidden  absolute top-0 -right-3 w-8 h-8 md:flex items-center justify-center 
-      rounded-full glass shadow hover:scale-110 transition z-50
-    "
-        >
-          {isMobile ? (
-            <ChevronLeft size={20} />
-          ) : isOpen ? (
-            <ChevronLeft size={20} />
-          ) : (
-            <ChevronRight size={20} />
-          )}
-        </button>
-
-        {/* ===== Header (Logo) - fixed at top ===== */}
-        <div className="flex items-center gap-3 px-5 py-4  mt-2 flex-shrink-0">
-          <div className="w-10 h-10 rounded-xl theme-primary shadow-lg" />
-          {(isOpen || isMobileOpen) && (
-            <h1 className="text-2xl font-extrabold theme-text">Intervue</h1>
-          )}
-        </div>
-
-        <div
-          className="flex-1 px-3 pb-2 overflow-auto space-y-3 sidebar-scroll"
-          style={{ WebkitOverflowScrolling: "touch" }}
-        >
-          <nav className="md:space-y-2 space-y-1 mb-2">
-            {menuItems.map((item, index) => {
-              const iconRef = useRef(null); // per-item ref
-              const [hovered, setHovered] = useState(false); // per-item hover
-
-              return (
-                <NavLink
-                  key={index}
-                  to={item.path}
-                  onClick={() => isMobile && setIsMobileOpen(false)}
-                  className={({ isActive }) =>
-                    `
-          relative group flex items-center gap-4 p-1 rounded-xl cursor-pointer
-          backdrop-blur-md border border-gray-100 transition-all shadow-sm
-          ${isActive ? "theme-primary text-white" : "text-gray-800 bg-white/60"}
-        `
-                  }
-                  onMouseEnter={() => setHovered(true)}
-                  onMouseLeave={() => setHovered(false)}
-                >
-                  <div ref={iconRef} className="w-10 h-10 flex items-center justify-center rounded-lg">
-                    {item.icon}
-                  </div>
-
-                  {(isOpen || isMobile) && (
-                    <span className="text-[15px] font-medium">{item.name}</span>
-                  )}
-
-                  {/* Remove inline tooltip */}
-                  {!isOpen && !isMobile && (
-                    <Tooltip targetRef={iconRef} isVisible={hovered}>
-                      {item.name}
-                    </Tooltip>
-                  )}
-                </NavLink>
-              );
-            })}
-          </nav>
-
-
-          {(isOpen || isMobile) && (
-            <div className="px-0 mt-4">
-              <div
-                className="
-        rounded-xl p-4 backdrop-blur-md 
-        bg-white/60 border border-gray-100 shadow-sm
-        hover:shadow-md transition-all group
-      "
-              >
-                {/* Icon + Heading */}
-                <div className="flex items-center gap-3">
-                  <div className="
-            w-10 h-10 flex items-center justify-center rounded-lg
-            bg-indigo-100 text-theme-text  
-            shadow-inner group-hover:scale-110 transition
-          ">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="w-6 h-6"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth="1.5"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M7 8h10M7 12h6m-6 4h8M5 20l2-2h10a2 2 0 002-2V6a2 2 0 00-2-2H7a2 2 0 00-2 2v14z"
-                      />
-                    </svg>
-
-                  </div>
-
-                  <h3 className="text-[15px] font-semibold text-gray-800">Interview Credit</h3>
-                </div>
-
-                <p className="text-sm text-gray-600 mt-2">
-                  You have <span className="font-semibold text-indigo-600">1.5</span> interview credits
-                </p>
-
-                <NavLink
-                  to="/buy-credits"
-                  onClick={() => isMobile && setIsMobileOpen(false)}
-                  className="
-          mt-3 block w-full py-2 rounded-lg 
-          theme-primary text-white font-semibold
-          shadow-sm hover:shadow-md hover:scale-[1.01] transition text-center
-        "
-                >
-                  Get Credit
-                </NavLink>
-              </div>
-            </div>
-          )}
-
-
-        </div>
-
-        {/* ===== Footer / Profile - fixed at bottom ===== */}
-        <div className="p-2 border-t border-white/40 flex-shrink-0">
-          <NavLink
-            to="/profile"
-            onClick={() => isMobile && setIsMobileOpen(false)}
-            className={({ isActive }) =>
-              `
-          flex items-center gap-3 p-2 rounded-xl backdrop-blur-md border shadow
-          ${isActive ? "theme-primary text-white" : "bg-white/60 text-gray-800"}
-        `
-            }
-          >
-            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center shadow-inner">
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-gray-700" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <circle cx="12" cy="7" r="4" />
-                <path d="M4 21v-2a4 4 0 0 1 3-3.87" />
-                <path d="M20 21v-2a4 4 0 0 0-3-3.87" />
-              </svg>
-            </div>
-
-            {(isOpen || isMobileOpen) && (
-              <div>
-                <p className="font-semibold text-[15px]">Your Profile</p>
-                <p className="text-xs opacity-80">Manage Account</p>
-              </div>
-            )}
-          </NavLink>
+          <span className="logo-text hide-collapsed">
+            AnswerFlow<span>AI</span>
+          </span>
 
           <button
-            onClick={() => {
-              setShowLogout(true);
-              isMobile && setIsMobileOpen(false);
-            }}
-            className="
-      w-full flex items-center gap-3 p-1 rounded-xl
-      bg-red-50 text-red-600 border border-red-200
-      hover:bg-red-100 transition shadow-sm mt-2
-    "
+            type="button"
+            className="collapse-btn"
+            onClick={() => setIsCollapsed((prev) => !prev)}
+            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-red-100">
-              <LogOut size={20} />
-            </div>
-
-            {(isOpen || isMobileOpen) && (
-              <span className="font-semibold text-[15px]">Logout</span>
-            )}
+            <CollapseIcon />
           </button>
         </div>
-      </motion.div>
 
+        <nav className="sidebar-nav">
+          {menuItems.map((item, index) => {
+            if (item.type === "divider") {
+              return <div key={`divider-${index}`} className="sidebar-divider" />;
+            }
 
-      <style>
-        {`
- .sidebar-scroll {
-  overflow-y: scroll !important;   /* keeps scrollbar always available */
-  scrollbar-width: thin;
-  scrollbar-gutter: stable;        /* prevents layout shifting */
-  scrollbar-color: rgba(255,255,255,0.4) rgba(255,255,255,0.1);
-}
+            const active = isActiveItem(item);
 
-/* Chrome / Edge / Safari */
-.sidebar-scroll::-webkit-scrollbar {
-  width: 10px; 
-}
+            return (
+              <NavLink
+                key={item.name}
+                to={item.path}
+                data-tooltip={item.tooltip}
+                onClick={closeMobileSidebar}
+                className={`nav-item ${active ? "active" : ""}`}
+              >
+                {item.icon}
+                <span className="hide-collapsed">{item.name}</span>
+                <span className="sidebar-tooltip">{item.tooltip}</span>
+              </NavLink>
+            );
+          })}
+        </nav>
 
-.sidebar-scroll::-webkit-scrollbar-track {
-  background: rgba(255,255,255,0.08);
-  backdrop-filter: blur(12px);
-  border-radius: 12px;
-}
+        <div className="credit-card" id="creditCard">
+          <div className="credit-card-label">
+            <CreditIcon />
+            <span>Interview Credit</span>
+          </div>
 
-.sidebar-scroll::-webkit-scrollbar-thumb {
-  background: linear-gradient(
-    180deg,
-    rgba(99,102,241, 0.9),
-    rgba(139,92,246, 0.9)
-  );
-  border-radius: 12px;
-  box-shadow: 0 0 12px rgba(99,102,241, 0.6);
-}
+          <div className="credit-count">
+            {credits !== null && credits !== undefined ? credits : "—"} interview credits
+          </div>
 
-.sidebar-scroll::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(
-    180deg,
-    rgba(79,70,229, 1),
-    rgba(124,58,237, 1)
-  );
-}
+          <button type="button" className="btn-get-credit" onClick={handleGetCredit}>
+            Get Credit
+          </button>
+        </div>
 
-`}
-      </style>
+        <div className="sidebar-footer">
+          <button type="button" className="profile-row" onClick={handleProfileClick}>
+            <div className="avatar">
+              <UserIcon />
+            </div>
 
-      {showLogout && (
-        <LogoutModal close={() => setShowLogout(false)} />
-      )}
+            <div className="profile-info hide-collapsed">
+              <div className="profile-name">{profileName}</div>
+              <div className="profile-sub">View Profile</div>
+            </div>
+          </button>
 
+          <button
+            type="button"
+            className="logout-row"
+            onClick={() => {
+              closeMobileSidebar();
+              setShowLogout(true);
+            }}
+          >
+            <LogoutIcon />
+            <span className="hide-collapsed">Logout</span>
+          </button>
+        </div>
+      </aside>
+
+      {showLogout && <LogoutModal close={() => setShowLogout(false)} />}
     </>
-
-
   );
-
 }

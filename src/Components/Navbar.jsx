@@ -1,103 +1,123 @@
-import React, { useState } from "react";
-import { Menu } from "lucide-react";
-import { useLocation } from "react-router-dom";
-import UploadModal from "../Components/UploadModal.jsx";
-import { Coins } from "lucide-react";
-import StartSessionModal from "../Components/StartSessionModal.jsx";
+import React from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
+const MenuIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+  >
+    <line x1="3" y1="6" x2="21" y2="6" />
+    <line x1="3" y1="12" x2="21" y2="12" />
+    <line x1="3" y1="18" x2="21" y2="18" />
+  </svg>
+);
 
+const PlusIcon = () => (
+  <svg
+    viewBox="0 0 20 20"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+  >
+    <path d="M10 4v12M4 10h12" />
+  </svg>
+);
 
+const UploadIcon = () => (
+  <svg
+    viewBox="0 0 20 20"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+  >
+    <path d="M10 13V4M6 8l4-4 4 4" />
+    <path d="M3 14v2a1 1 0 001 1h12a1 1 0 001-1v-2" />
+  </svg>
+);
 
-
-export default function Navbar({ setIsMobileOpen, openUpload, isMobileOpen, openSession }) {
+export default function Navbar({
+  setIsMobileOpen,
+  openUpload,
+  isMobileOpen,
+  openSession,
+  openTrial,
+}) {
   const location = useLocation();
-  const [isSessionOpen, setIsSessionOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const pathname = location.pathname;
+
   const getPageName = () => {
-    const path = location.pathname;
-    if (path === "/home") return "Home";
-    if (path.includes("interview")) return "Interview Sessions";
-    if (path.includes("resume")) return "CV / Resume";
-    if (path.includes("download")) return "Download App";
-    if (path.includes("support")) return "Email Support";
+    if (pathname === "/" || pathname === "/home") return "Dashboard";
+    if (pathname.includes("buy-credits")) return "Buy Interview Credits";
+    if (pathname.includes("live")) return "Live Interview";
+    if (pathname.includes("mock")) return "Mock Interview";
+    if (pathname.includes("interview") || pathname.includes("sessions")) {
+      return "Interview Sessions";
+    }
+    if (pathname.includes("resume")) return "CV / Resume";
+    if (pathname.includes("download")) return "Download App";
+    if (pathname.includes("support")) return "Email Support";
+    if (pathname.includes("profile")) return "Profile";
     return "Dashboard";
   };
 
-  // ✅ Check if user is on resume page
-  const isResumePage = location.pathname.includes("resume");
+  const isResumePage = pathname.includes("resume");
 
-  // ✅ New: check if on Buy Credit page
-  const isBuyCreditPage =
-    location.pathname === "/buy-credits" || location.pathname.includes("/buy-credits");
+  const handleStartTrial = () => {
+    if (typeof openTrial === "function") {
+      openTrial();
+      return;
+    }
+
+    navigate("/mock");
+  };
 
   return (
-    <nav
-      className="
-        h-16 glass border-b shadow
-        flex items-center justify-between
-        px-4 md:px-6
-        top-0 z-20
-      "
-    >
-      {/* Mobile Menu Button - hide when mobile sidebar is open */}
-      {!isMobileOpen && (
-        <button
-          className="md:hidden p-2 rounded-lg glass shadow"
-          onClick={() => setIsMobileOpen(true)}
-        >
-          <Menu size={24} />
-        </button>
-      )}
+    <header className="topbar">
+      <button
+        type="button"
+        className={`hamburger ${isMobileOpen ? "is-open" : ""}`}
+        onClick={() => setIsMobileOpen((prev) => !prev)}
+        aria-label={isMobileOpen ? "Close sidebar" : "Open sidebar"}
+      >
+        <MenuIcon />
+      </button>
 
-      {/* Desktop Page Title */}
-      {/* If it's the buy credit page we hide the regular title and show a custom centered label instead */}
-      {!isBuyCreditPage ? (
-        <h2
-          className="
-            hidden md:block
-            text-lg sm:text-xl md:text-2xl 
-            font-bold theme-text
-          "
-        >
-          {getPageName()}
-        </h2>
-      ) : (
-        <div className="hidden md:flex flex-col items-start md:items-center">
-          <h2 className="text-lg sm:text-xl md:text-xl font-bold theme-text flex items-center gap-2">
-            <Coins className="w-6 h-6 text-blue-700" />
-            <span>Buy Interview Credits</span>
-          </h2>
-        </div>
+      <div className="topbar-title">{getPageName()}</div>
 
-      )}
+      <div className="topbar-actions">
+        {/* <button type="button" className="theme-toggle">
+          Dark Mode
+        </button> */}
 
-      {/* Right Side Buttons */}
-      {/* If on buycredit page we DO NOT show the right side buttons (or page name). */}
-      <div className="flex items-center gap-2 sm:gap-3 md:gap-4 ml-auto">
-        {isResumePage && !isBuyCreditPage && (
-          <button
-            onClick={openUpload} // ⬅ call parent
-            className="px-4 py-1.5 rounded-xl theme-primary text-[15px]shadow-md hover:scale-105 transition"
-          >
+        {isResumePage ? (
+          <button type="button" className="btn-teal" onClick={openUpload}>
+            <UploadIcon />
             Upload Resume
           </button>
-        )}
-
-        {!isResumePage && !isBuyCreditPage && (
+        ) : (
           <>
-            <button className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl glass text-gray-800 shadow hover:bg-white/80 hover:scale-105 transition font-medium text-sm sm:text-[15px]">
+            <button
+              type="button"
+              className="btn-outline"
+              onClick={handleStartTrial}
+            >
               Start Trial
             </button>
 
-            <button
-              onClick={openSession} // ⬅ trigger modal from Layout
-              className="px-4 py-1.5 sm:px-5 sm:py-2 rounded-xl theme-primary shadow-md hover:scale-105 active:scale-95 transition font-semibold text-sm sm:text-[15px]"
-            >
+            <button type="button" className="btn-dark" onClick={openSession}>
+              <PlusIcon />
               Start Session
             </button>
           </>
         )}
       </div>
-
-    </nav>
+    </header>
   );
 }

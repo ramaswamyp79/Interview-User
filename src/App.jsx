@@ -1,9 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { Toaster } from "react-hot-toast";
-
 import ProtectedRoute from "./routes/ProtectedRoute";
 import PublicOnlyRoute from "./routes/PublicOnlyRoute";
-
+import ToastContainer from "./utils/ToastContainer";
 import AuthCallback from "./Authentication/AuthCallback";
 
 import Login from "./Authentication/SignIn";
@@ -23,20 +21,19 @@ import Profile from "./Pages/user/Profile";
 import Download from "./Pages/user/Download";
 import InterviewCredits from "./Pages/user/InterviewCredits";
 import PaymentSuccess from "./Pages/payment/PaymentSuccess";
-import WebSocketInterview from "./Pages/user/WebSocketInterview";
-
+import MockInterview from "./Pages/user/MockInterview";
+import LiveInterview from "./Pages/user/LiveInterview";
 
 function App() {
   console.log("BUILD:", import.meta.env.VITE_BUILD_ID);
+
   return (
     <BrowserRouter>
-      <Toaster position="top-right" />
+      <ToastContainer />
 
       <Routes>
-        {/* ROOT */}
         <Route path="/" element={<Navigate to="/home" replace />} />
 
-        {/* PUBLIC ONLY */}
         <Route element={<PublicOnlyRoute />}>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
@@ -45,10 +42,8 @@ function App() {
           <Route path="/verify-email" element={<VerifyEmail />} />
         </Route>
 
-        {/* AUTH CALLBACK */}
         <Route path="/auth/callback" element={<AuthCallback />} />
 
-        {/* PROTECTED */}
         <Route element={<ProtectedRoute />}>
           <Route element={<Layout />}>
             <Route path="/home" element={<Home />} />
@@ -59,15 +54,13 @@ function App() {
             <Route path="/download" element={<Download />} />
             <Route path="/buy-credits" element={<InterviewCredits />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
+            <Route path="/mock" element={<MockInterview />} />
+            <Route path="/live-interview" element={<LiveInterview />} />
           </Route>
-          <Route path="/websocket-interview" element={<WebSocketInterview />} />
         </Route>
       </Routes>
-
     </BrowserRouter>
   );
 }
 
 export default App;
-
-

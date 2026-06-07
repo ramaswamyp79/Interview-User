@@ -1,9 +1,0 @@
-apiVersion: networking.gke.io/v1
-kind: ManagedCertificate
-metadata:
-  name: frontend-cert
-spec:
-  domains:
-    - 34.54.116.200.nip.io
-
-

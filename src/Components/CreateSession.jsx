@@ -32,6 +32,7 @@ ShieldCheck,
 import Toast from "../utils/toast";
 import { getResumesService } from "../Services/resume.service";
 import sessionService from "../Services/sessionService";
+import { buildSocketInterviewUrl, startSocketSession } from "../Services/socketWebService";
 import { uploadToGCS } from "../utils/gcsUpload";
 import ResumeProcessingLoader from "./ResumeProcessingLoader";
 import { getUserCredits } from "../Services/userService";
@@ -691,20 +692,6 @@ export default function CreateSession({ open, onClose, onCreated }) {
         );
       }
 
-      let urlToOpen = meetingLink?.trim() || getDefaultUrl(selectedMethod);
-
-      if (response?.data?.meetingUrl) {
-        urlToOpen = response.data.meetingUrl;
-      }
-
-      if (response?.meetingUrl) {
-        urlToOpen = response.meetingUrl;
-      }
-
-      if (response?.session?.meetingUrl) {
-        urlToOpen = response.session.meetingUrl;
-      }
-
       const activatedSession = response?.session || response?.data?.session;
 
       if (activatedSession) {
@@ -720,11 +707,16 @@ export default function CreateSession({ open, onClose, onCreated }) {
 
       showToast("Session activated! 🎉", "success");
 
+      await startSocketSession({ sessionId });
+
       handleClose();
 
-      if (urlToOpen) {
-        window.open(urlToOpen, "_blank");
-      }
+      window.location.assign(
+        buildSocketInterviewUrl({
+          sessionId,
+          email: response?.user?.email || activatedSession?.email || localStorage.getItem("email"),
+        })
+      );
     } catch (error) {
       console.error("Failed to activate session:", error);
       showToast(error?.response?.data?.message || "Failed to start session", "error");

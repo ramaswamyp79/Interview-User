@@ -774,6 +774,7 @@ export default function InterviewSession() {
     return {
       session: response.session,
       user: response.user || null,
+      sessionId: connectItem.id,
     };
   } catch (error) {
     console.error("Connect failed:", error);

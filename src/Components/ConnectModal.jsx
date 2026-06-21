@@ -21,6 +21,7 @@ import MeetLogo from "../assets/GoogleMeet.png";
 import TeamsLogo from "../assets/Teams.png";
 import WhatsappLogo from "../assets/Whatsapp.png";
 import { getUserCredits } from "../Services/userService";
+import { buildSocketInterviewUrl, startSocketSession } from "../Services/socketWebService";
 
 const CONNECTION_METHODS = [
   {
@@ -93,15 +94,11 @@ export default function ConnectModal({
     return CONNECTION_METHODS.find((item) => item.id === selectedMethod);
   }, [selectedMethod]);
 
-  const getDefaultUrl = () => selectedPlatform?.url || "/";
-
   const handleActivate = async () => {
   if (!selectedMethod || activating) return;
 
   try {
     setActivating(true);
-
-    let urlToOpen = meetingLink.trim() || getDefaultUrl();
 
     const response = await onActivate?.({
       shareAudio,
@@ -130,27 +127,23 @@ export default function ConnectModal({
       );
     }
 
-    if (response?.data?.meetingUrl) {
-      urlToOpen = response.data.meetingUrl;
-    }
+    const sessionId =
+      response?.sessionId ||
+      response?.session?._id ||
+      response?.session?.id ||
+      response?.data?.session?._id ||
+      response?.data?.session?.id;
+    const email =
+      response?.user?.email ||
+      response?.session?.email ||
+      response?.data?.session?.email ||
+      localStorage.getItem("email");
 
-    if (response?.meetingUrl) {
-      urlToOpen = response.meetingUrl;
-    }
-
-    if (response?.session?.meetingUrl) {
-      urlToOpen = response.session.meetingUrl;
-    }
-
-    if (response?.data?.session?.meetingUrl) {
-      urlToOpen = response.data.session.meetingUrl;
-    }
+    await startSocketSession({ sessionId });
 
     onClose?.();
 
-    if (urlToOpen) {
-      window.open(urlToOpen, "_blank");
-    }
+    window.location.assign(buildSocketInterviewUrl({ sessionId, email }));
   } catch (error) {
     console.error("Failed to start session:", error);
   } finally {
